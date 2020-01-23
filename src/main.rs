@@ -1,32 +1,29 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+#[macro_use] extern crate serde;
 
-async fn pong() -> impl Responder {
-    HttpResponse::Ok().body("pong")
-}
+use actix_web::{web, App, HttpResponse, HttpServer};
 
-async fn readiness() -> impl Responder {
-    let process = std::process::Command::new("sh")
-            .arg("-c")
-            .arg("echo hello")
-            .output();
+mod todo_api_web;
 
-    match process {
-        Ok(_) => HttpResponse::Accepted(),
-        Err(_) => HttpResponse::InternalServerError(),
-    }
-}
+use todo_api_web::controller::{
+    pong, readiness,
+    todo::create_todo
+};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new().service(
             web::scope("/")
+                .service(
+                    web::scope("api/")
+                        .route("create", web::post().to(create_todo))
+                )
                 .route("ping", web::get().to(pong))
                 .route("~/ready", web::get().to(readiness))
                 .route("", web::get().to(|| HttpResponse::NotFound())),
         )
     })
-    .workers(6)
+    .workers(num_cpus::get() + 2)
     .bind("127.0.0.1:4000")
     .unwrap()
     .run()
