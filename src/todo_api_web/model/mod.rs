@@ -32,6 +32,7 @@ impl TodoIdResponse {
         TodoIdResponse { id: id }
     }
 
+    #[allow(dead_code)]
     pub fn get_id(self) -> String {
         format!("{}", self.id)
     }
