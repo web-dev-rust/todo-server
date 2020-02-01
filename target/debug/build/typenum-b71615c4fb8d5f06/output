@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_OP=/Users/julia.boeira/Documents/todo-server/target/debug/build/typenum-b71615c4fb8d5f06/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/julia.boeira/Documents/todo-server/target/debug/build/typenum-b71615c4fb8d5f06/out/op.rs
