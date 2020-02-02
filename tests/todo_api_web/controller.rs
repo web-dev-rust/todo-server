@@ -88,6 +88,7 @@ mod create_todo {
             .to_request();
 
         let resp = test::read_response(&mut app, req).await;
+        println!("{:?}", resp);
 
         let id: TodoIdResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
         assert!(uuid::Uuid::parse_str(&id.get_id()).is_ok());

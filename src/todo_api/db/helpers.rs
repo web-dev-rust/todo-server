@@ -18,10 +18,10 @@ pub fn create_table() {
     let list_tables_input: ListTablesInput = Default::default();
 
     match client.list_tables(list_tables_input).sync() {
-        Err(error) => {
-            println!("Error: {:?}", error);
-        }
         Ok(_) => {
+            println!("Error: {:?}", "Table already exists");
+        }
+        Err(_) => {
             let create_table_input = CreateTableInput {
                 table_name: TODO_CARD_TABLE.to_string(),
                 key_schema: vec![KeySchemaElement {
