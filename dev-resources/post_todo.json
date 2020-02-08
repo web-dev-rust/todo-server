@@ -1,0 +1,20 @@
+{
+    "title": "This is a card",
+    "description": "This is the description of the card",
+    "owner": "ae75c4d8-5241-4f1c-8e85-ff380c041442",
+    "tasks": [
+        {
+            "title": "title 1",
+            "is_done": true
+        },
+        {
+            "title": "title 2",
+            "is_done": true
+        },
+        {
+            "title": "title 3",
+            "is_done": false
+        }
+    ],
+    "state": "Doing"
+}
