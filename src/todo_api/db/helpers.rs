@@ -5,10 +5,19 @@ use rusoto_dynamodb::{
     ListTablesInput, ProvisionedThroughput,
 };
 
+#[cfg(feature = "dynamo")]
 pub fn client() -> DynamoDbClient {
     DynamoDbClient::new(Region::Custom {
         name: String::from("us-east-1"),
         endpoint: String::from("http://localhost:8000"),
+    })
+}
+
+#[cfg(not(feature = "dynamo"))]
+pub fn client() -> DynamoDbClient {
+    DynamoDbClient::new(Region::Custom {
+        name: String::from("julia-home"),
+        endpoint: String::from("http://dynamodb:8000"),
     })
 }
 

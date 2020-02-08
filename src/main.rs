@@ -21,7 +21,7 @@ async fn web_main() -> Result<(), std::io::Error> {
         .configure(app_routes)
     })
     .workers(num_cpus::get() + 2)
-    .bind("127.0.0.1:4000")
+    .bind("0.0.0.0:4000")
     .unwrap()
     .run()
     .await

@@ -3,3 +3,12 @@ db:
 
 test:
 	cargo test --features "dynamo"
+
+run-local:
+	cargo run --features "dynamo"
+
+run:
+	docker-compose up --build
+
+down:
+	docker-compose down
