@@ -1,4 +1,5 @@
 use uuid::Uuid;
+pub mod http;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Task {

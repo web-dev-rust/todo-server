@@ -1,15 +1,13 @@
 use crate::todo_api::{adapter, db::helpers::TODO_CARD_TABLE, model::TodoCardDb};
 use crate::todo_api_web::model::TodoCard;
 use log::{debug, error};
-use rusoto_dynamodb::{PutItemInput, ScanInput};
+use rusoto_dynamodb::{DynamoDbClient, PutItemInput, ScanInput};
 use uuid::Uuid;
 
 #[cfg(not(feature = "dynamo"))]
-pub fn put_todo(todo_card: TodoCardDb) -> Option<Uuid> {
-    use crate::todo_api::db::helpers::client;
+pub fn put_todo(client: DynamoDbClient, todo_card: TodoCardDb) -> Option<Uuid> {
     use rusoto_dynamodb::DynamoDb;
 
-    let client = client();
     let put_item = PutItemInput {
         table_name: TODO_CARD_TABLE.to_string(),
         item: todo_card.clone().into(),
@@ -29,11 +27,9 @@ pub fn put_todo(todo_card: TodoCardDb) -> Option<Uuid> {
 }
 
 #[cfg(not(feature = "dynamo"))]
-pub fn get_todos() -> Option<Vec<TodoCard>> {
-    use crate::todo_api::db::helpers::client;
+pub fn get_todos(client: DynamoDbClient) -> Option<Vec<TodoCard>> {
     use rusoto_dynamodb::DynamoDb;
 
-    let client = client();
     let scan_item = ScanInput {
         limit: Some(100i64),
         table_name: TODO_CARD_TABLE.to_string(),
@@ -54,7 +50,7 @@ pub fn get_todos() -> Option<Vec<TodoCard>> {
 }
 
 #[cfg(feature = "dynamo")]
-pub fn get_todos() -> Option<Vec<TodoCard>> {
+pub fn get_todos(_: DynamoDbClient) -> Option<Vec<TodoCard>> {
     use crate::todo_api_web::model::{State, Task};
     use rusoto_dynamodb::DynamoDb;
 
@@ -88,7 +84,7 @@ pub fn get_todos() -> Option<Vec<TodoCard>> {
 }
 
 #[cfg(feature = "dynamo")]
-pub fn put_todo(todo_card: TodoCardDb) -> Option<Uuid> {
+pub fn put_todo(_: DynamoDbClient, todo_card: TodoCardDb) -> Option<Uuid> {
     let _ = PutItemInput {
         table_name: TODO_CARD_TABLE.to_string(),
         item: todo_card.clone().into(),

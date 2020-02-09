@@ -1,23 +1,27 @@
 #[macro_use] extern crate serde;
 
 use actix_web::{App, HttpServer};
-use actix_web::middleware::Logger;
+use actix_web::middleware::{Logger,DefaultHeaders};
 use env_logger;
 use bastion::prelude::*;
+use uuid::Uuid;
 
 mod todo_api;
 mod todo_api_web;
 
 use todo_api_web::{
-    routes::app_routes
+    routes::app_routes,
+    model::http::Clients,
 };
 use todo_api::db::helpers::create_table;
 
 #[actix_rt::main]
-async fn web_main() -> Result<(), std::io::Error> {    
+async fn web_main() -> Result<(), std::io::Error> {  
     HttpServer::new(|| {
         App::new()
-        .wrap(Logger::new("IP:%a DATETIME:%t REQUEST:\"%r\" STATUS: %s DURATION:%D"))
+        .data(Clients::new())
+        .wrap(DefaultHeaders::new().header("x-request-id", Uuid::new_v4().to_string()))
+        .wrap(Logger::new("IP:%a DATETIME:%t REQUEST:\"%r\" STATUS: %s DURATION:%D X-REQUEST-ID:%{x-request-id}o"))
         .configure(app_routes)
     })
     .workers(num_cpus::get() + 2)
