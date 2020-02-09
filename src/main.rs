@@ -1,10 +1,11 @@
 #[macro_use] extern crate serde;
+// #[macro_use] extern crate diesel_migrations;
 
 use actix_web::{App, HttpServer};
 use actix_web::middleware::{Logger,DefaultHeaders};
-use env_logger;
 use bastion::prelude::*;
 use uuid::Uuid;
+use dotenv::dotenv;
 
 mod todo_api;
 mod todo_api_web;
@@ -33,8 +34,7 @@ async fn web_main() -> Result<(), std::io::Error> {
 
 #[fort::root]
 async fn main(_: BastionContext) -> Result<(), ()> {
-    std::env::set_var("RUST_LOG", "actix_web=info");
-    env_logger::init();
+    dotenv().ok();
     create_table();
     
     let _ = web_main();
