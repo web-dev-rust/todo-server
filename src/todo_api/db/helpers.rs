@@ -1,4 +1,5 @@
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
+use chrono::{DateTime, Duration, Utc};
 use diesel::{
     prelude::*,
     r2d2::{ConnectionManager, Pool},
@@ -109,4 +110,8 @@ pub fn db_executor_address() -> Addr<DbExecutor> {
         .expect("Failed to create pool.");
 
     SyncArbiter::start(4, move || DbExecutor(pool.clone()))
+}
+
+pub fn one_day_from_now() -> DateTime<Utc> {
+    Utc::now() + Duration::days(1)
 }

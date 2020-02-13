@@ -1,3 +1,5 @@
+pub mod auth;
+
 #[macro_export]
 macro_rules! val {
     (B => $bval:expr) => {{
@@ -24,7 +26,7 @@ macro_rules! val {
 
 use crate::{
     todo_api::model::{StateDb, TaskDb, TodoCardDb},
-    todo_api_web::model::{State, Task, TodoCard},
+    todo_api_web::model::todo::{State, Task, TodoCard},
 };
 use actix_web::web;
 use rusoto_dynamodb::ScanOutput;
@@ -99,7 +101,7 @@ mod test {
     use super::*;
     use crate::{
         todo_api::model::{StateDb, TaskDb, TodoCardDb},
-        todo_api_web::model::{State, Task, TodoCard},
+        todo_api_web::model::todo::{State, Task, TodoCard},
     };
     use actix_web::web::Json;
 
@@ -136,7 +138,7 @@ mod test {
 #[cfg(test)]
 mod scan_to_cards {
     use super::scanoutput_to_todocards;
-    use crate::todo_api_web::model::{State, Task, TodoCard};
+    use crate::todo_api_web::model::todo::{State, Task, TodoCard};
     use rusoto_dynamodb::{AttributeValue, ScanOutput};
 
     fn attr_values() -> std::collections::HashMap<String, AttributeValue> {

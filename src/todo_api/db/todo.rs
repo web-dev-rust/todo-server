@@ -1,5 +1,5 @@
 use crate::todo_api::{adapter, db::helpers::TODO_CARD_TABLE, model::TodoCardDb};
-use crate::todo_api_web::model::TodoCard;
+use crate::todo_api_web::model::todo::TodoCard;
 use log::{debug, error};
 use rusoto_dynamodb::{DynamoDbClient, PutItemInput, ScanInput};
 use uuid::Uuid;

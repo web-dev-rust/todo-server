@@ -9,7 +9,7 @@ use crate::{
     },
     todo_api_web::model::{
         http::Clients,
-        TodoCard, TodoIdResponse, TodoCardsResponse
+        todo::{TodoCard, TodoIdResponse, TodoCardsResponse}
     }
 };
 

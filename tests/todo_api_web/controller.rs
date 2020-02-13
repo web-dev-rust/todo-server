@@ -40,7 +40,7 @@ mod ping_readiness {
 
 mod create_todo {
     use todo_server::todo_api_web::{
-        model::TodoIdResponse,
+        model::todo::TodoIdResponse,
         routes::app_routes
     };
 
@@ -73,7 +73,7 @@ mod create_todo {
 
 mod read_all_todos {
     use todo_server::todo_api_web::{
-        model::{TodoCardsResponse},
+        model::todo::{TodoCardsResponse},
         routes::app_routes
     };
 

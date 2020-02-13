@@ -1,5 +1,6 @@
 #[macro_use] extern crate serde;
-// #[macro_use] extern crate diesel_migrations;
+#[macro_use] extern crate diesel_migrations;
+#[macro_use] extern crate diesel;
 
 use actix_web::{App, HttpServer};
 use actix_web::middleware::{Logger,DefaultHeaders};
@@ -7,6 +8,7 @@ use bastion::prelude::*;
 use uuid::Uuid;
 use dotenv::dotenv;
 
+mod schema;
 mod todo_api;
 mod todo_api_web;
 

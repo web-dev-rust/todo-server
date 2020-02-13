@@ -2,6 +2,8 @@ use rusoto_dynamodb::AttributeValue;
 use std::collections::HashMap;
 use uuid::Uuid;
 
+pub mod auth;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct TaskDb {
     pub is_done: bool,
