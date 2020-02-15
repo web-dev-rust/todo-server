@@ -2,10 +2,14 @@ use crate::schema::*;
 #[derive(Debug, Serialize, Deserialize, Queryable, Insertable)]
 #[table_name = "auth_user"]
 pub struct User {
-    email: String,
-    id: uuid::Uuid,
-    password: String,
-    expires_at: chrono::NaiveDateTime,
+    #[cfg(test)] pub email: String,
+    #[cfg(not(test))] email: String,
+    #[cfg(test)] pub id: uuid::Uuid,
+    #[cfg(not(test))] id: uuid::Uuid,
+    #[cfg(test)] pub password: String,
+    #[cfg(not(test))] password: String,
+    #[cfg(test)] pub expires_at: chrono::NaiveDateTime,
+    #[cfg(not(test))] expires_at: chrono::NaiveDateTime,
 }
 
 impl User {
@@ -18,6 +22,15 @@ impl User {
             password: password,
             expires_at: utc.naive_utc(),
         }
+    }
+
+    #[cfg(test)]
+    pub fn is_user_valid(self, email: &str, password: &str) {
+        use bcrypt::{verify};
+
+        assert_eq!(self.email, String::from(email));
+        assert!(verify(password, &self.password).unwrap());
+        assert!(self.id.to_string().len() == 36);
     }
 }
 
