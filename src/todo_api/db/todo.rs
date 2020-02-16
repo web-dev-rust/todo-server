@@ -51,7 +51,7 @@ pub fn get_todos(client: DynamoDbClient) -> Option<Vec<TodoCard>> {
 
 #[cfg(feature = "dynamo")]
 pub fn get_todos(_: DynamoDbClient) -> Option<Vec<TodoCard>> {
-    use crate::todo_api_web::model::{State, Task};
+    use crate::todo_api_web::model::todo::{State, Task};
     use rusoto_dynamodb::DynamoDb;
 
     let _ = ScanInput {

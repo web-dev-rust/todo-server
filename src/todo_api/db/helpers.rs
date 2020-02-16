@@ -101,7 +101,8 @@ impl Actor for DbExecutor {
     type Context = SyncContext<Self>;
 }
 
-pub fn db_executor_address() -> Addr<DbExecutor> {
+#[cfg(not(feature = "dynamo"))]
+pub fn db_executor_address() -> Option<Addr<DbExecutor>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let manager = ConnectionManager::<PgConnection>::new(database_url);
@@ -109,7 +110,12 @@ pub fn db_executor_address() -> Addr<DbExecutor> {
         .build(manager)
         .expect("Failed to create pool.");
 
-    SyncArbiter::start(4, move || DbExecutor(pool.clone()))
+    Some(SyncArbiter::start(4, move || DbExecutor(pool.clone())))
+}
+
+#[cfg(feature = "dynamo")]
+pub fn db_executor_address() -> Option<Addr<DbExecutor>> {
+    None
 }
 
 pub fn one_day_from_now() -> DateTime<Utc> {

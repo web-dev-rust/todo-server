@@ -141,3 +141,33 @@ mod read_all_todos {
         assert_eq!(todo_cards.cards, mock_get_todos());
     }
 }
+
+mod  auth {
+    use actix_web::{
+        test, App,
+        http::StatusCode,
+    };
+    use actix_service::Service;
+    use todo_server::todo_api_web::{
+        routes::app_routes
+    };
+    use crate::helpers::{read_json};
+
+
+    #[actix_rt::test]
+    async fn signup_returns_created_status() {
+        let mut app = test::init_service(
+            App::new()
+                .configure(app_routes)
+        ).await;
+    
+        let signup_req = test::TestRequest::post()
+            .uri("/auth/signup")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("signup.json").as_bytes().to_owned())
+            .to_request();
+
+        let resp = app.call(signup_req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::CREATED);
+    }
+}
