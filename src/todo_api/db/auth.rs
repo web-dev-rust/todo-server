@@ -1,7 +1,10 @@
 use diesel::{PgConnection, prelude::*};
 
 use crate::todo_api::model::auth::User;
-use crate::todo_api::db::error::DbError;
+use crate::todo_api::{
+    db::error::DbError,
+    core::model::UpdateDate,
+};
 
 #[cfg(not(feature = "db-test"))]
 pub fn insert_new_user(user: User, conn: &PgConnection) -> Result<(),DbError>{
@@ -33,6 +36,30 @@ pub fn insert_new_user(user: User, _: &PgConnection) -> Result<(),DbError>{
     Ok(())
 }
 
+pub fn scan_user(user_email: String, conn: &PgConnection) -> Result<User, DbError>{
+    use crate::schema::auth_user::dsl::*;
+
+    let items = auth_user
+            .filter(email.eq(&user_email))
+            .load::<User>(conn);
+
+    match items {
+        Ok(users) if users.len() > 1 => Err(DbError::DatabaseConflit),
+        Ok(users) if users.len() < 1 => Err(DbError::CannotFindUser),
+        Ok(users) => Ok(users.first().unwrap().clone().to_owned()),
+        Err(_) => Err(DbError::CannotFindUser)
+    }
+}
+
+pub fn update_user_jwt_date(update_date: UpdateDate, conn: &PgConnection) -> Result<(), DbError>{
+    use crate::schema::auth_user::dsl::*;
+
+    let target = auth_user.filter(email.eq(update_date.email));
+    match diesel::update(target).set(expires_at.eq(update_date.expires_at)).execute(conn) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(DbError::TryAgain)
+    }
+}
 
 #[cfg(test)]
 mod test {

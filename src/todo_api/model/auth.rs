@@ -1,11 +1,11 @@
 use crate::schema::*;
-#[derive(Debug, Serialize, Deserialize, Queryable, Insertable)]
+use bcrypt::{verify, BcryptResult};
+
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable)]
 #[table_name = "auth_user"]
 pub struct User {
-    #[cfg(test)] pub email: String,
-    #[cfg(not(test))] email: String,
-    #[cfg(test)] pub id: uuid::Uuid,
-    #[cfg(not(test))] id: uuid::Uuid,
+    pub email: String,
+    pub id: uuid::Uuid,
     #[cfg(test)] pub password: String,
     #[cfg(not(test))] password: String,
     #[cfg(test)] pub expires_at: chrono::NaiveDateTime,
@@ -24,10 +24,16 @@ impl User {
         }
     }
 
+    pub fn verify(&self, pswd: String) -> BcryptResult<bool> {
+        verify(pswd,&self.password)
+    }
+
+    pub fn get_id(self) -> String {
+        self.id.to_string()
+    }
+
     #[cfg(test)]
     pub fn is_user_valid(self, email: &str, password: &str) {
-        use bcrypt::{verify};
-
         assert_eq!(self.email, String::from(email));
         assert!(verify(password, &self.password).unwrap());
         assert!(self.id.to_string().len() == 36);
