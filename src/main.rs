@@ -21,7 +21,7 @@ use todo_api::db::helpers::create_table;
 #[actix_rt::main]
 async fn web_main() -> Result<(), std::io::Error> {  
     HttpServer::new(|| {
-        App::new() 
+        App::new()
         .data(Clients::new())
         .wrap(DefaultHeaders::new().header("x-request-id", Uuid::new_v4().to_string()))
         .wrap(Logger::new("IP:%a DATETIME:%t REQUEST:\"%r\" STATUS: %s DURATION:%D X-REQUEST-ID:%{x-request-id}o"))

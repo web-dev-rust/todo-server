@@ -4,7 +4,7 @@ use actix::prelude::Addr;
 #[derive(Clone)]
 pub struct Clients {
     pub dynamo: rusoto_dynamodb::DynamoDbClient,
-    pub postgres: Option<Addr<DbExecutor>>,
+    pub postgres: Addr<DbExecutor>,
 }
 
 impl Clients {

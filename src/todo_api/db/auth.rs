@@ -3,7 +3,7 @@ use diesel::{PgConnection, prelude::*};
 use crate::todo_api::model::auth::User;
 use crate::todo_api::db::error::DbError;
 
-#[cfg(not(feature = "dynamo"))]
+#[cfg(not(feature = "db-test"))]
 pub fn insert_new_user(user: User, conn: &PgConnection) -> Result<(),DbError>{
     use crate::schema::auth_user::dsl::*;
 
@@ -17,7 +17,7 @@ pub fn insert_new_user(user: User, conn: &PgConnection) -> Result<(),DbError>{
     }
 }
 
-#[cfg(feature = "dynamo")]
+#[cfg(feature = "db-test")]
 pub fn insert_new_user(user: User, _: &PgConnection) -> Result<(),DbError>{
     use crate::schema::auth_user::dsl::*;
     use diesel::debug_query;

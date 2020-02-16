@@ -18,7 +18,7 @@ pub async fn signup_user(state: web::Data<Clients>, info: web::Json<SignUp>) -> 
         return HttpResponse::BadRequest();
     }
 
-    let resp = state.postgres.clone().unwrap()
+    let resp = state.postgres
         .send(signup)
         .await;
 

@@ -13,7 +13,7 @@ use rusoto_dynamodb::{
 };
 use std::env;
 
-#[cfg(feature = "dynamo")]
+#[cfg(feature = "db-test")]
 pub fn client() -> DynamoDbClient {
     DynamoDbClient::new(Region::Custom {
         name: String::from("us-east-1"),
@@ -21,7 +21,7 @@ pub fn client() -> DynamoDbClient {
     })
 }
 
-#[cfg(not(feature = "dynamo"))]
+#[cfg(not(feature = "db-test"))]
 pub fn client() -> DynamoDbClient {
     DynamoDbClient::new(Region::Custom {
         name: String::from("julia-home"),
@@ -101,8 +101,7 @@ impl Actor for DbExecutor {
     type Context = SyncContext<Self>;
 }
 
-#[cfg(not(feature = "dynamo"))]
-pub fn db_executor_address() -> Option<Addr<DbExecutor>> {
+pub fn db_executor_address() -> Addr<DbExecutor> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let manager = ConnectionManager::<PgConnection>::new(database_url);
@@ -110,12 +109,7 @@ pub fn db_executor_address() -> Option<Addr<DbExecutor>> {
         .build(manager)
         .expect("Failed to create pool.");
 
-    Some(SyncArbiter::start(4, move || DbExecutor(pool.clone())))
-}
-
-#[cfg(feature = "dynamo")]
-pub fn db_executor_address() -> Option<Addr<DbExecutor>> {
-    None
+    SyncArbiter::start(4, move || DbExecutor(pool.clone()))
 }
 
 pub fn one_day_from_now() -> DateTime<Utc> {
