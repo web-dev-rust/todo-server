@@ -1,11 +1,19 @@
+use actix::{Actor, Addr, SyncArbiter, SyncContext};
+use chrono::{DateTime, Duration, Utc};
+use diesel::{
+    prelude::*,
+    r2d2::{ConnectionManager, Pool},
+};
+use diesel_migrations::run_pending_migrations;
 use log::{debug, error};
 use rusoto_core::Region;
 use rusoto_dynamodb::{
     AttributeDefinition, CreateTableInput, DynamoDb, DynamoDbClient, KeySchemaElement,
     ListTablesInput, ProvisionedThroughput,
 };
+use std::env;
 
-#[cfg(feature = "dynamo")]
+#[cfg(feature = "db-test")]
 pub fn client() -> DynamoDbClient {
     DynamoDbClient::new(Region::Custom {
         name: String::from("us-east-1"),
@@ -13,7 +21,7 @@ pub fn client() -> DynamoDbClient {
     })
 }
 
-#[cfg(not(feature = "dynamo"))]
+#[cfg(not(feature = "db-test"))]
 pub fn client() -> DynamoDbClient {
     DynamoDbClient::new(Region::Custom {
         name: String::from("julia-home"),
@@ -26,6 +34,7 @@ pub static TODO_CARD_TABLE: &str = "TODO_CARDS";
 pub fn create_table() {
     let client = client();
     let list_tables_input: ListTablesInput = Default::default();
+    run_migrations();
 
     match client.list_tables(list_tables_input).sync() {
         Ok(list) => {
@@ -44,6 +53,16 @@ pub fn create_table() {
             create_table_input();
         }
     }
+}
+
+fn run_migrations() {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pg_conn = PgConnection::establish(&database_url)
+        .expect(&format!("Error connecting to {}", database_url));
+    match run_pending_migrations(&pg_conn) {
+        Ok(_) => debug!("auth database created"),
+        Err(_) => error!("auth database creation failed"),
+    };
 }
 
 fn create_table_input() {
@@ -69,11 +88,30 @@ fn create_table_input() {
     match client.create_table(create_table_input).sync() {
         Ok(output) => {
             debug!("Table created {:?}", output);
-            // println!("Output: {:?}", output);
         }
         Err(error) => {
             error!("Could not create table due to error: {:?}", error);
-            // println!("Error: {:?}", error);
         }
     }
+}
+
+pub struct DbExecutor(pub Pool<ConnectionManager<PgConnection>>);
+
+impl Actor for DbExecutor {
+    type Context = SyncContext<Self>;
+}
+
+pub fn db_executor_address() -> Addr<DbExecutor> {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    let pool = r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.");
+
+    SyncArbiter::start(4, move || DbExecutor(pool.clone()))
+}
+
+pub fn one_day_from_now() -> DateTime<Utc> {
+    Utc::now() + Duration::days(1)
 }

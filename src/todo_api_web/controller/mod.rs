@@ -1,6 +1,7 @@
 use actix_web::{HttpResponse, Responder};
 
 pub mod todo;
+pub mod auth;
 
 pub async fn pong() -> impl Responder {
     HttpResponse::Ok().body("pong")

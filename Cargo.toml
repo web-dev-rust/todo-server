@@ -5,11 +5,12 @@ authors = ["Julia Naomi <jnboeira@outlook.com>"]
 edition = "2018"
 
 [features]
-dynamo = []
+db-test = []
 
 [dependencies]
-actix-web = "2.0"
-actix-rt = "1.0"
+actix = "0.9.0"
+actix-web = "2.0.0"
+actix-rt = "1.0.0"
 actix-http = "1.0.1"
 uuid = { version = "0.7", features = ["serde", "v4"] }
 serde = { version = "1.0.104", features = ["derive"] }
@@ -18,10 +19,17 @@ serde_derive = "1.0.104"
 num_cpus = "1.0"
 rusoto_dynamodb = "0.41.0"
 rusoto_core = "0.41.0"
-env_logger = "0.7.1"
 log = "0.4"
 fort = "0.3"
-bastion = "0.3"
+bastion = "0.3.4"
+chrono = { version = "0.4.10", features = ["serde"] }
+diesel = { version = "1.4.3", features = ["postgres", "uuidv07", "r2d2", "chrono"] }
+diesel_migrations = "1.4.0"
+dotenv = "0.15.0"
+r2d2 = "0.8.8"
+bcrypt = "0.6"
+regex = "1.3.4"
+jsonwebtokens = "1.0.0-alpha.12"
 
 [dev-dependencies]
 bytes = "0.5.3"

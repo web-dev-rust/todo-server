@@ -16,10 +16,13 @@ services:
       - AWS_SECRET_ACCESS_KEY=bar
       - AWS_REGION=julia-home
       - AWS_DYNAMODB_ENDPOINT=http://dynamodb:8000
+      - RUST_LOG=debug
     depends_on:
       - dynamodb
+      - postgres
     links:
       - dynamodb
+      - postgres
     networks:
       internal_net:
         ipv4_address: 172.21.1.2
@@ -38,6 +41,19 @@ services:
       - dynamodata:/home/dynamodblocal/
     working_dir: /home/dynamodblocal/
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
+
+  postgres:
+    container_name: "postgres"
+    image: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      internal_net:
+        ipv4_address: 172.21.1.15
+    environment:
+      - POSTGRES_USER=auth
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=auth_db
 
 networks:
   internal_net:

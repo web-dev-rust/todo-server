@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::Read;
-use todo_server::todo_api_web::model::{State, Task, TodoCard};
+use todo_server::todo_api_web::model::todo::{State, Task, TodoCard};
 
 pub fn read_json(file: &str) -> String {
     let path = String::from("dev-resources/") + file;
