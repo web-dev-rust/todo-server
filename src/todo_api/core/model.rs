@@ -26,7 +26,7 @@ impl Handler<UpdateDate> for DbExecutor {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Jwt{
     token: String
 }

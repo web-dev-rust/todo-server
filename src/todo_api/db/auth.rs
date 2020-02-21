@@ -36,6 +36,7 @@ pub fn insert_new_user(user: User, _: &PgConnection) -> Result<(),DbError>{
     Ok(())
 }
 
+#[cfg(not(feature = "db-test"))]
 pub fn scan_user(user_email: String, conn: &PgConnection) -> Result<User, DbError>{
     use crate::schema::auth_user::dsl::*;
 
@@ -51,6 +52,12 @@ pub fn scan_user(user_email: String, conn: &PgConnection) -> Result<User, DbErro
     }
 }
 
+#[cfg(feature = "db-test")]
+pub fn scan_user(user_email: String, _conn: &PgConnection) -> Result<User, DbError>{
+    Ok(User::from(user_email, "this is a hash".to_string()))
+}
+
+#[cfg(not(feature = "db-test"))]
 pub fn update_user_jwt_date(update_date: UpdateDate, conn: &PgConnection) -> Result<(), DbError>{
     use crate::schema::auth_user::dsl::*;
 
@@ -59,6 +66,11 @@ pub fn update_user_jwt_date(update_date: UpdateDate, conn: &PgConnection) -> Res
         Ok(_) => Ok(()),
         Err(_) => Err(DbError::TryAgain)
     }
+}
+
+#[cfg(feature = "db-test")]
+pub fn update_user_jwt_date(_update_date: UpdateDate, _conn: &PgConnection) -> Result<(), DbError>{
+    Ok(())
 }
 
 #[cfg(test)]

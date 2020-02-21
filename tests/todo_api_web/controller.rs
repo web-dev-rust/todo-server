@@ -51,45 +51,23 @@ mod create_todo {
 
     use crate::helpers::read_json;
 
-    // #[actix_rt::test]
-    // async fn valid_todo_post() {
-    //     let mut app = test::init_service(
-    //         App::new()
-    //             .configure(app_routes)
-    //     ).await;
+    #[actix_rt::test]
+    async fn valid_todo_post() {
+        let mut app = test::init_service(
+            App::new()
+                .configure(app_routes)
+        ).await;
     
-    //     let req = test::TestRequest::post()
-    //         .uri("/api/create")
-    //         .header("Content-Type", "application/json")
-    //         .set_payload(read_json("post_todo.json").as_bytes().to_owned())
-    //         .to_request();
+        let req = test::TestRequest::post()
+            .uri("/api/create")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("post_todo.json").as_bytes().to_owned())
+            .to_request();
 
-    //     let resp = test::read_response(&mut app, req).await;
+        let resp = test::read_response(&mut app, req).await;
 
-    //     let id: TodoIdResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
-    //     assert!(uuid::Uuid::parse_str(&id.get_id()).is_ok());
-    // }
-
-    #[test]
-    fn valid_todo_post() {
-        let test = || async {
-            let mut app = test::init_service(
-                App::new()
-                    .configure(app_routes)
-            ).await;
-        
-            let req = test::TestRequest::post()
-                .uri("/api/create")
-                .header("Content-Type", "application/json")
-                .set_payload(read_json("post_todo.json").as_bytes().to_owned())
-                .to_request();
-
-            let resp = test::read_response(&mut app, req).await;
-
-            let id: TodoIdResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
-            assert!(uuid::Uuid::parse_str(&id.get_id()).is_ok());
-        };
-        test();
+        let id: TodoIdResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
+        assert!(uuid::Uuid::parse_str(&id.get_id()).is_ok());
     }
 }
 
@@ -108,124 +86,62 @@ mod read_all_todos {
 
     use crate::helpers::{read_json, mock_get_todos};
 
-    // #[actix_rt::test]
-    // async fn test_todo_index_ok() {
-    //     let mut app = test::init_service(
-    //         App::new()
-    //             .configure(app_routes)
-    //     ).await;
+    #[actix_rt::test]
+    async fn test_todo_index_ok() {
+        let mut app = test::init_service(
+            App::new()
+                .configure(app_routes)
+        ).await;
 
-    //     let req = test::TestRequest::with_uri("/api/index").to_request();
+        let req = test::TestRequest::with_uri("/api/index").to_request();
     
-    //     let resp = app.call(req).await.unwrap();
-    //     assert_eq!(resp.status(), StatusCode::OK);
-    // }
-
-    #[test]
-    fn test_todo_index_ok() {
-        let test = || async {
-            let mut app = test::init_service(
-                App::new()
-                    .configure(app_routes)
-            ).await;
-
-            let req = test::TestRequest::with_uri("/api/index").to_request();
-        
-            let resp = app.call(req).await.unwrap();
-            assert_eq!(resp.status(), StatusCode::OK);
-        };
-        test();
+        let resp = app.call(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
     }
 
-    // #[actix_rt::test]
-    // async fn test_todo_cards_count() {
-    //     let mut app = test::init_service(
-    //         App::new()
-    //             .configure(app_routes)
-    //     ).await;
+    #[actix_rt::test]
+    async fn test_todo_cards_count() {
+        let mut app = test::init_service(
+            App::new()
+                .configure(app_routes)
+        ).await;
     
-    //     let post_req = test::TestRequest::post()
-    //         .uri("/api/create")
-    //         .header("Content-Type", "application/json")
-    //         .set_payload(read_json("post_todo.json").as_bytes().to_owned())
-    //         .to_request();
+        let post_req = test::TestRequest::post()
+            .uri("/api/create")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("post_todo.json").as_bytes().to_owned())
+            .to_request();
 
-    //     let _ = app.call(post_req).await.unwrap();
-    //     let req = test::TestRequest::with_uri("/api/index").to_request();
-    //     let resp = test::read_response(&mut app, req).await;
+        let _ = app.call(post_req).await.unwrap();
+        let req = test::TestRequest::with_uri("/api/index").to_request();
+        let resp = test::read_response(&mut app, req).await;
 
-    //     let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
-    //     assert_eq!(todo_cards.cards.len(), 1);
-    // }
-
-    #[test]
-    fn test_todo_cards_count() {
-        let test = || async {
-            let mut app = test::init_service(
-                App::new()
-                    .configure(app_routes)
-            ).await;
-        
-            let post_req = test::TestRequest::post()
-                .uri("/api/create")
-                .header("Content-Type", "application/json")
-                .set_payload(read_json("post_todo.json").as_bytes().to_owned())
-                .to_request();
-
-            let _ = app.call(post_req).await.unwrap();
-            let req = test::TestRequest::with_uri("/api/index").to_request();
-            let resp = test::read_response(&mut app, req).await;
-
-            let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
-            assert_eq!(todo_cards.cards.len(), 1);
-        };
-        test();
+        let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
+        assert_eq!(todo_cards.cards.len(), 1);
     }
 
-    // #[actix_rt::test]
-    // async fn test_todo_cards_with_value() {
-    //     let mut app = test::init_service(
-    //         App::new()
-    //             .configure(app_routes)
-    //     ).await;
+
+    #[actix_rt::test]
+    async fn test_todo_cards_with_value() {
+        let mut app = test::init_service(
+            App::new()
+                .configure(app_routes)
+        ).await;
     
-    //     let post_req = test::TestRequest::post()
-    //         .uri("/api/create")
-    //         .header("Content-Type", "application/json")
-    //         .set_payload(read_json("post_todo.json").as_bytes().to_owned())
-    //         .to_request();
+        let post_req = test::TestRequest::post()
+            .uri("/api/create")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("post_todo.json").as_bytes().to_owned())
+            .to_request();
 
-    //     let _ = app.call(post_req).await.unwrap();
-    //     let req = test::TestRequest::with_uri("/api/index").to_request();
-    //     let resp = test::read_response(&mut app, req).await;
+        let _ = app.call(post_req).await.unwrap();
+        let req = test::TestRequest::with_uri("/api/index").to_request();
+        let resp = test::read_response(&mut app, req).await;
 
-    //     let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
-    //     assert_eq!(todo_cards.cards, mock_get_todos());
-    // }
-
-    #[test]
-    fn test_todo_cards_with_value() {
-        let test = || async {
-            let mut app = test::init_service(
-                App::new()
-                    .configure(app_routes)
-            ).await;
-        
-            let post_req = test::TestRequest::post()
-                .uri("/api/create")
-                .header("Content-Type", "application/json")
-                .set_payload(read_json("post_todo.json").as_bytes().to_owned())
-                .to_request();
-
-            let _ = app.call(post_req).await.unwrap();
-            let req = test::TestRequest::with_uri("/api/index").to_request();
-            let resp = test::read_response(&mut app, req).await;
-
-            let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
-            assert_eq!(todo_cards.cards, mock_get_todos());
-        };
-        test();
+        let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
+        assert_eq!(todo_cards.cards, mock_get_todos());
     }
+
 }
 
 mod  auth {
@@ -239,43 +155,41 @@ mod  auth {
     use crate::helpers::{read_json};
 
 
-    // #[actix_rt::test]
-    // async fn signup_returns_created_status() {
-
-    //     let app = test::init_service(
-    //         App::new()
-    //             .configure(app_routes)
-    //     );
+    #[actix_rt::test]
+    async fn signup_returns_created_status() {
+        let mut app = test::init_service(
+            App::new()
+                .configure(app_routes)
+        ).await;
     
-    //     let signup_req = test::TestRequest::post()
-    //         .uri("/auth/signup")
-    //         .header("Content-Type", "application/json")
-    //         .set_payload(read_json("signup.json").as_bytes().to_owned())
-    //         .to_request();
+        let signup_req = test::TestRequest::post()
+            .uri("/auth/signup")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("signup.json").as_bytes().to_owned())
+            .to_request();
 
-    //     let resp = app.await.call(signup_req).await.unwrap();
+        let resp = test::call_service(&mut app,signup_req).await;
 
-    //     assert_eq!(resp.status(), StatusCode::CREATED);
-    // }
+        assert_eq!(resp.status(), StatusCode::CREATED);
+    }
 
-    #[test]
-    fn signup_returns_created_status2() {
-        let test = || async {
-            let mut app = test::init_service(
-                App::new()
-                    .configure(app_routes)
-            ).await;
+    #[actix_rt::test]
+    async fn login_returns_token() {
+        let mut app = test::init_service(
+            App::new()
+            .configure(app_routes)
+        ).await;
 
-            let signup_req = test::TestRequest::post()
-                .uri("/auth/signup")
-                .header("Content-Type", "application/json")
-                .set_payload(read_json("signup.json").as_bytes().to_owned())
-                .to_request();
+        let login_req = test::TestRequest::post()
+            .uri("/auth/login")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("signup.json").as_bytes().to_owned())
+            .to_request();
 
-            let resp = test::call_service(&mut app,signup_req).await;
+        let resp_body = test::read_response(&mut app, login_req).await;
 
-            assert_eq!(resp.status(), StatusCode::CREATED);
-        };
-        test();
+        let jwt: String = String::from_utf8(resp_body.to_vec()).unwrap();
+        
+        assert!(jwt.contains("token"));
     }
 }

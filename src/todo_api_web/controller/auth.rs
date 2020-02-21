@@ -11,13 +11,8 @@ use crate::todo_api::{
 };
 
 pub async fn signup_user(state: web::Data<Clients>, info: web::Json<SignUp>) -> impl Responder {
-    use regex::Regex;
-
-    let email_regex = Regex::new("\\w{1,}@\\w{2,}.[a-z]{2,3}(.[a-z]{2,3})?").unwrap();
-    let pswd_regex = Regex::new("[[a-z]+[A-Z]+[0-9]+(\\s@!=_#&~\\[\\]\\{\\}\\?)]{32,64}").unwrap();
-    
     let signup = info.into_inner();
-    if !email_regex.is_match(&signup.email) || !pswd_regex.is_match(&signup.password) {
+    if !is_email_pswd_valids(&signup.email, &signup.password) {
         return HttpResponse::BadRequest();
     }
 
@@ -35,13 +30,8 @@ pub async fn signup_user(state: web::Data<Clients>, info: web::Json<SignUp>) -> 
 }
 
 pub async fn login(state: web::Data<Clients>, info: web::Json<Login>) -> impl Responder {
-    use regex::Regex;
-
-    let email_regex = Regex::new("\\w{1,}@\\w{2,}.[a-z]{2,3}(.[a-z]{2,3})?").unwrap();
-    let pswd_regex = Regex::new("[[a-z]+[A-Z]+[0-9]+(\\s@!=_#&~\\[\\]\\{\\}\\?)]{32,64}").unwrap();
-    
     let login_user = info.clone();
-    if !email_regex.is_match(&login_user.email) || !pswd_regex.is_match(&login_user.password) {
+    if !is_email_pswd_valids(&login_user.email, &login_user.password) {
         return HttpResponse::BadRequest().finish();
     }
 
@@ -65,3 +55,35 @@ pub async fn login(state: web::Data<Clients>, info: web::Json<Login>) -> impl Re
     }
 }
 
+pub fn is_email_pswd_valids(email: &str, pswd: &str) -> bool {
+    use regex::Regex;
+
+    let email_regex = Regex::new("\\w{1,}@\\w{2,}.[a-z]{2,3}(.[a-z]{2,3})?$").unwrap();
+    let pswd_regex = Regex::new("[[a-z]+[A-Z]+[0-9]+(\\s@!=_#&~\\[\\]\\{\\}\\?)]{32,64}").unwrap();
+    
+    email_regex.is_match(email) && pswd_regex.is_match(pswd)
+}
+
+#[cfg(test)]
+mod valid_email_pswd {
+    use super::is_email_pswd_valids;
+
+    #[test]
+    fn valid_email_and_pswd() {
+        assert!(is_email_pswd_valids("my@email.com", "My cr4zy P@ssw0rd My cr4zy P@ssw0rd"));
+    }
+
+    #[test]
+    fn invalid_emails() {
+        assert!(!is_email_pswd_valids("my_email.com", "My cr4zy P@ssw0rd My cr4zy P@ssw0rd"));
+        assert!(!is_email_pswd_valids("my@email.com.br.us", "My cr4zy P@ssw0rd My cr4zy P@ssw0rd"));
+    }
+
+    #[test]
+    fn invalid_passwords() {
+        assert!(!is_email_pswd_valids("my@email.com.br", "My cr4zy P@ssw0rd"));
+        assert!(is_email_pswd_valids("my@email.com", "my cr4zy p@ssw0rd my cr4zy p@ssw0rd"));
+        assert!(is_email_pswd_valids("my@email.com", "My crazy P@ssword My crazy P@ssword"));
+        assert!(is_email_pswd_valids("my@email.com", "My cr4zy Passw0rd My cr4zy Passw0rd"));
+    }
+}

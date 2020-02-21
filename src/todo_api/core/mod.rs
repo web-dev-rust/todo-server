@@ -41,7 +41,7 @@ pub fn create_token(user: User, update_date: UpdateDate) -> String {
     use chrono::Utc;
 
     let alg = Algorithm::new_hmac(AlgorithmID::HS256, "secret").unwrap();
-    let header = json!({ "alg": alg.name(), "date":  Utc::now().to_string()});
-    let claims = json!({ "id": user.clone().get_id(), "email": user.email, "expires_at": update_date.expires_at });
-    encode(&header, &claims, &alg).unwrap()
+    let header = json!({ "alg": alg.name(), "typ": "jwt", "date":  Utc::now().to_string()});
+    let payload = json!({ "id": user.clone().get_id(), "email": user.email, "expires_at": update_date.expires_at });
+    encode(&header, &payload, &alg).unwrap()
 }

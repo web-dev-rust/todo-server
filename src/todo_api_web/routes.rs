@@ -16,7 +16,7 @@ pub fn app_routes(config: &mut web::ServiceConfig) {
             .service(
                 web::scope("auth/")
                     .route("signup", web::post().to(signup_user))
-                    .route("login", web::post().to(login))
+                    .route("login", web::post().to(login)),
             )
             .route("ping", web::get().to(pong))
             .route("~/ready", web::get().to(readiness))
