@@ -1,13 +1,16 @@
-use actix_web::{HttpResponse, web, Responder};
+use actix_web::{HttpResponse, HttpRequest, web, Responder};
 use log::{error};
 use crate::{
     todo_api_web::model::{
         http::Clients,
-        auth::{SignUp, Login}
+        auth::{SignUp, Auth}
     }
 };
 use crate::todo_api::{
-    core::generate_jwt,
+    core::{
+        generate_jwt, decode_jwt, validate_jwt_date, validate_jwt_info, is_email_pswd_valids,
+        model::JwtValue,
+    }
 };
 
 pub async fn signup_user(state: web::Data<Clients>, info: web::Json<SignUp>) -> impl Responder {
@@ -29,9 +32,9 @@ pub async fn signup_user(state: web::Data<Clients>, info: web::Json<SignUp>) -> 
     }
 }
 
-pub async fn login(state: web::Data<Clients>, info: web::Json<Login>) -> impl Responder {
+pub async fn login(state: web::Data<Clients>, info: web::Json<Auth>) -> impl Responder {
     let login_user = info.clone();
-    if !is_email_pswd_valids(&login_user.email, &login_user.password) {
+    if !is_email_pswd_valids(&login_user.email, &login_user.password.clone().unwrap()) {
         return HttpResponse::BadRequest().finish();
     }
 
@@ -46,7 +49,7 @@ pub async fn login(state: web::Data<Clients>, info: web::Json<Login>) -> impl Re
         },
         Ok(user) => {
             let usr = user.unwrap();
-            match usr.verify(info.clone().password) {
+            match usr.verify(info.clone().password.unwrap()) {
                 Ok(true) => generate_jwt(usr, state).await,
                 Ok(false) => HttpResponse::NoContent().finish(),
                 Err(_) => HttpResponse::NoContent().finish()
@@ -55,35 +58,31 @@ pub async fn login(state: web::Data<Clients>, info: web::Json<Login>) -> impl Re
     }
 }
 
-pub fn is_email_pswd_valids(email: &str, pswd: &str) -> bool {
+pub async fn logout(req: HttpRequest, state: web::Data<Clients>, info: web::Json<Auth>) -> impl Responder {
     use regex::Regex;
 
+    let jwt = req.headers().get("x-auth");
+    let logout_user = info.clone();
     let email_regex = Regex::new("\\w{1,}@\\w{2,}.[a-z]{2,3}(.[a-z]{2,3})?$").unwrap();
-    let pswd_regex = Regex::new("[[a-z]+[A-Z]+[0-9]+(\\s@!=_#&~\\[\\]\\{\\}\\?)]{32,64}").unwrap();
     
-    email_regex.is_match(email) && pswd_regex.is_match(pswd)
-}
-
-#[cfg(test)]
-mod valid_email_pswd {
-    use super::is_email_pswd_valids;
-
-    #[test]
-    fn valid_email_and_pswd() {
-        assert!(is_email_pswd_valids("my@email.com", "My cr4zy P@ssw0rd My cr4zy P@ssw0rd"));
+    if !email_regex.is_match(&logout_user.email) {
+        return HttpResponse::BadRequest().finish();
     }
 
-    #[test]
-    fn invalid_emails() {
-        assert!(!is_email_pswd_valids("my_email.com", "My cr4zy P@ssw0rd My cr4zy P@ssw0rd"));
-        assert!(!is_email_pswd_valids("my@email.com.br.us", "My cr4zy P@ssw0rd My cr4zy P@ssw0rd"));
-    }
+    let resp = state.postgres
+        .send(logout_user.clone());
 
-    #[test]
-    fn invalid_passwords() {
-        assert!(!is_email_pswd_valids("my@email.com.br", "My cr4zy P@ssw0rd"));
-        assert!(is_email_pswd_valids("my@email.com", "my cr4zy p@ssw0rd my cr4zy p@ssw0rd"));
-        assert!(is_email_pswd_valids("my@email.com", "My crazy P@ssword My crazy P@ssword"));
-        assert!(is_email_pswd_valids("my@email.com", "My cr4zy Passw0rd My cr4zy Passw0rd"));
+    match jwt {
+        None => return HttpResponse::BadRequest().finish(),
+        Some(jwt) => {
+            let jwt_value : JwtValue = serde_json::from_value(decode_jwt(jwt.to_str().unwrap())).expect("failed to parse JWT Value");
+            match validate_jwt_date(jwt_value.expires_at) {
+                false => 
+                    HttpResponse::Unauthorized().finish(),
+                true => {
+                    validate_jwt_info(jwt_value.email, logout_user.email, resp.await.expect("Failed to read contact info"))
+                }
+            }
+        }
     }
 }

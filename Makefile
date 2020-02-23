@@ -1,12 +1,18 @@
 db:
-	docker run -i --rm --name auth-db -p 5432:5432 -e POSTGRES_USER=auth -e POSTGRES_PASSWORD=secret -d postgres &
-	docker run -p 8000:8000 amazon/dynamodb-local
+	docker run -i --rm --name auth-db -p 5432:5432 -e POSTGRES_USER=auth -e POSTGRES_PASSWORD=secret -d postgres
 
-test:
-	cargo test --features "db-test"
+clear-db:
+	docker ps -a | awk '{ print $1,$2 }' | grep postgres | awk '{print $1 }' | xargs -I {} docker stop {}
+
+test: clear-db db
+	sleep 2
+	diesel setup
+	diesel migration run
+	cargo test --features "dbtest"
+	diesel migration redo
 
 run-local:
-	cargo run --features "db-test"
+	cargo run --features "dbtest"
 
 run:
 	docker-compose up --build

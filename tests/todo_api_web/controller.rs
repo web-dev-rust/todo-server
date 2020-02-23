@@ -1,5 +1,6 @@
 mod ping_readiness {
     use todo_server::todo_api_web::routes::app_routes;
+    use todo_server::todo_api_web::model::http::Clients;
 
     use bytes::Bytes;
     use actix_web::{
@@ -7,13 +8,15 @@ mod ping_readiness {
         http::StatusCode,
     };
     use actix_service::Service;
+    use dotenv::dotenv;
 
     #[actix_rt::test]
     async fn test_ping_pong() {
+        dotenv().ok();
         let mut app = test::init_service(
-            App::new().configure(
-                app_routes
-            )
+            App::new()
+                .data(Clients::new())
+                .configure(app_routes)
         ).await;
 
         let req = test::TestRequest::get()
@@ -26,8 +29,10 @@ mod ping_readiness {
 
     #[actix_rt::test]
     async fn test_readiness_ok() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
+                .data(Clients::new())
                 .configure(app_routes)
         ).await;
     
@@ -36,25 +41,46 @@ mod ping_readiness {
         let resp = app.call(req).await.unwrap();
         assert_eq!(resp.status(), StatusCode::ACCEPTED);
     }
+
+    #[actix_rt::test]
+    async fn not_found_route() {
+        dotenv().ok();
+        let mut app = test::init_service(
+            App::new()
+                .data(Clients::new())
+                .configure(app_routes)
+        ).await;
+
+        let req = test::TestRequest::get()
+            .uri("/crazy-route")
+            .to_request();
+
+        let resp = app.call(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+    }
 }
 
+#[cfg(test)]
 mod create_todo {
     use todo_server::todo_api_web::{
         model::todo::TodoIdResponse,
         routes::app_routes
     };
-
+    use todo_server::todo_api_web::model::http::Clients;
     use actix_web::{
         test, App,
     };
     use serde_json::from_str;
+    use dotenv::dotenv;
 
     use crate::helpers::read_json;
 
     #[actix_rt::test]
     async fn valid_todo_post() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
+                .data(Clients::new())
                 .configure(app_routes)
         ).await;
     
@@ -71,25 +97,29 @@ mod create_todo {
     }
 }
 
+#[cfg(test)]
 mod read_all_todos {
     use todo_server::todo_api_web::{
         model::todo::{TodoCardsResponse},
         routes::app_routes
     };
-
+    use todo_server::todo_api_web::model::http::Clients;
     use actix_web::{
         test, App,
         http::StatusCode,
     };
     use actix_service::Service;
     use serde_json::from_str;
+    use dotenv::dotenv;
 
     use crate::helpers::{read_json, mock_get_todos};
 
     #[actix_rt::test]
     async fn test_todo_index_ok() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
+                .data(Clients::new())
                 .configure(app_routes)
         ).await;
 
@@ -101,8 +131,10 @@ mod read_all_todos {
 
     #[actix_rt::test]
     async fn test_todo_cards_count() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
+                .data(Clients::new())
                 .configure(app_routes)
         ).await;
     
@@ -123,8 +155,10 @@ mod read_all_todos {
 
     #[actix_rt::test]
     async fn test_todo_cards_with_value() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
+                .data(Clients::new())
                 .configure(app_routes)
         ).await;
     
@@ -144,6 +178,7 @@ mod read_all_todos {
 
 }
 
+#[cfg(test)]
 mod  auth {
     use actix_web::{
         test, App,
@@ -152,13 +187,17 @@ mod  auth {
     use todo_server::todo_api_web::{
         routes::app_routes
     };
+    use todo_server::todo_api_web::model::http::Clients;
+    use dotenv::dotenv;
     use crate::helpers::{read_json};
 
 
     #[actix_rt::test]
     async fn signup_returns_created_status() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
+                .data(Clients::new())
                 .configure(app_routes)
         ).await;
     
@@ -169,15 +208,17 @@ mod  auth {
             .to_request();
 
         let resp = test::call_service(&mut app,signup_req).await;
-
+        println!("{:?}", resp);
         assert_eq!(resp.status(), StatusCode::CREATED);
     }
 
     #[actix_rt::test]
     async fn login_returns_token() {
+        dotenv().ok();
         let mut app = test::init_service(
             App::new()
-            .configure(app_routes)
+                .data(Clients::new())
+                .configure(app_routes)
         ).await;
 
         let login_req = test::TestRequest::post()

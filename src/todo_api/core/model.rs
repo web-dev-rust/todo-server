@@ -10,6 +10,7 @@ use crate::todo_api::{
 pub struct UpdateDate {
     pub email: String,
     pub expires_at: chrono::NaiveDateTime,
+    pub is_active: bool
 }
 
 impl Message for UpdateDate {
@@ -37,4 +38,10 @@ impl Jwt {
             token: jwt
         }
     }
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JwtValue {
+    pub id: String,
+    pub email: String,
+    pub expires_at:  chrono::NaiveDateTime
 }

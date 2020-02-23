@@ -10,6 +10,7 @@ pub struct User {
     #[cfg(not(test))] password: String,
     #[cfg(test)] pub expires_at: chrono::NaiveDateTime,
     #[cfg(not(test))] expires_at: chrono::NaiveDateTime,
+    pub is_active: bool
 }
 
 impl User {
@@ -21,11 +22,18 @@ impl User {
             id: uuid::Uuid::new_v4(),
             password: password,
             expires_at: utc.naive_utc(),
+            is_active: false
         }
     }
 
+    #[cfg(not(feature = "dbtest"))]
     pub fn verify(&self, pswd: String) -> BcryptResult<bool> {
         verify(pswd,&self.password)
+    }
+
+    #[cfg(feature = "dbtest")]
+    pub fn verify(&self, pswd: String) -> BcryptResult<bool> {
+        BcryptResult::Ok(true)
     }
 
     pub fn get_id(self) -> String {

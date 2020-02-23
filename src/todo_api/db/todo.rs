@@ -4,7 +4,7 @@ use log::{debug, error};
 use rusoto_dynamodb::{DynamoDbClient, PutItemInput, ScanInput};
 use uuid::Uuid;
 
-#[cfg(not(feature = "db-test"))]
+#[cfg(not(feature = "dbtest"))]
 pub fn put_todo(client: DynamoDbClient, todo_card: TodoCardDb) -> Option<Uuid> {
     use rusoto_dynamodb::DynamoDb;
 
@@ -26,7 +26,7 @@ pub fn put_todo(client: DynamoDbClient, todo_card: TodoCardDb) -> Option<Uuid> {
     }
 }
 
-#[cfg(not(feature = "db-test"))]
+#[cfg(not(feature = "dbtest"))]
 pub fn get_todos(client: DynamoDbClient) -> Option<Vec<TodoCard>> {
     use rusoto_dynamodb::DynamoDb;
 
@@ -49,7 +49,7 @@ pub fn get_todos(client: DynamoDbClient) -> Option<Vec<TodoCard>> {
     }
 }
 
-#[cfg(feature = "db-test")]
+#[cfg(feature = "dbtest")]
 pub fn get_todos(_: DynamoDbClient) -> Option<Vec<TodoCard>> {
     use crate::todo_api_web::model::todo::{State, Task};
     use rusoto_dynamodb::DynamoDb;
@@ -83,7 +83,7 @@ pub fn get_todos(_: DynamoDbClient) -> Option<Vec<TodoCard>> {
     }])
 }
 
-#[cfg(feature = "db-test")]
+#[cfg(feature = "dbtest")]
 pub fn put_todo(_: DynamoDbClient, todo_card: TodoCardDb) -> Option<Uuid> {
     let _ = PutItemInput {
         table_name: TODO_CARD_TABLE.to_string(),

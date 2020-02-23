@@ -1,11 +1,13 @@
 use crate::todo_api::db::helpers::{client, db_executor_address, DbExecutor};
-use actix::prelude::Addr;
+use actix::{Addr};
+
 
 #[derive(Clone)]
 pub struct Clients {
     pub dynamo: rusoto_dynamodb::DynamoDbClient,
     pub postgres: Addr<DbExecutor>,
 }
+
 
 impl Clients {
     pub fn new() -> Self {
