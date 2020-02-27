@@ -5,7 +5,7 @@ authors = ["Julia Naomi <jnboeira@outlook.com>"]
 edition = "2018"
 
 [features]
-db-test = []
+dbtest = []
 
 [dependencies]
 actix = "0.9.0"

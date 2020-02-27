@@ -1,12 +1,9 @@
-use actix::prelude::*;
 use crate::todo_api::{
-    db::{
-        error::DbError,
-        helpers::DbExecutor,
-    },
     adapter,
-    model::auth::User,
+    db::helpers::DbExecutor,
+    model::{auth::User, error::DbError},
 };
+use actix::prelude::*;
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct SignUp {
     pub email: String,
@@ -30,19 +27,19 @@ impl Handler<SignUp> for DbExecutor {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub struct Login {
+pub struct Auth {
     pub email: String,
-    pub password: String,
+    pub password: Option<String>,
 }
 
-impl Message for Login {
+impl Message for Auth {
     type Result = Result<User, DbError>;
 }
 
-impl Handler<Login> for DbExecutor {
+impl Handler<Auth> for DbExecutor {
     type Result = Result<User, DbError>;
 
-    fn handle(&mut self, msg: Login, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Auth, _: &mut Self::Context) -> Self::Result {
         use crate::todo_api::db::auth::scan_user;
 
         scan_user(msg.email, &self.0.get().expect("Failed to open connection"))
