@@ -1,25 +1,25 @@
-#[macro_use] extern crate serde;
-#[macro_use] extern crate diesel_migrations;
-#[macro_use] extern crate diesel;
+#[macro_use]
+extern crate serde;
+#[macro_use]
+extern crate diesel_migrations;
+#[macro_use]
+extern crate diesel;
 
+use actix_web::middleware::{DefaultHeaders, Logger};
 use actix_web::{App, HttpServer};
-use actix_web::middleware::{Logger,DefaultHeaders};
 use bastion::prelude::*;
-use uuid::Uuid;
 use dotenv::dotenv;
+use uuid::Uuid;
 
 mod schema;
 mod todo_api;
 mod todo_api_web;
 
-use todo_api_web::{
-    routes::app_routes,
-    model::http::Clients,
-};
 use todo_api::db::helpers::create_table;
+use todo_api_web::{model::http::Clients, routes::app_routes};
 
 #[actix_rt::main]
-async fn web_main() -> Result<(), std::io::Error> {  
+async fn web_main() -> Result<(), std::io::Error> {
     HttpServer::new(|| {
         App::new()
         .data(Clients::new())
@@ -40,6 +40,6 @@ async fn main(_: BastionContext) -> Result<(), ()> {
     create_table();
 
     let _ = web_main();
-    
+
     Ok(())
 }

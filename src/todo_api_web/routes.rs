@@ -1,7 +1,7 @@
 use crate::todo_api_web::controller::{
+    auth::{login, logout, signup_user},
     pong, readiness,
     todo::{create_todo, show_all_todo},
-    auth::{signup_user, login, logout}
 };
 use actix_web::{web, HttpResponse};
 

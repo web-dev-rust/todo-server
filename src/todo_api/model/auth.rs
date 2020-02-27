@@ -6,11 +6,15 @@ use bcrypt::{verify, BcryptResult};
 pub struct User {
     pub email: String,
     pub id: uuid::Uuid,
-    #[cfg(test)] pub password: String,
-    #[cfg(not(test))] password: String,
-    #[cfg(test)] pub expires_at: chrono::NaiveDateTime,
-    #[cfg(not(test))] expires_at: chrono::NaiveDateTime,
-    pub is_active: bool
+    #[cfg(test)]
+    pub password: String,
+    #[cfg(not(test))]
+    password: String,
+    #[cfg(test)]
+    pub expires_at: chrono::NaiveDateTime,
+    #[cfg(not(test))]
+    expires_at: chrono::NaiveDateTime,
+    pub is_active: bool,
 }
 
 impl User {
@@ -22,13 +26,13 @@ impl User {
             id: uuid::Uuid::new_v4(),
             password: password,
             expires_at: utc.naive_utc(),
-            is_active: false
+            is_active: false,
         }
     }
 
     #[cfg(not(feature = "dbtest"))]
     pub fn verify(&self, pswd: String) -> BcryptResult<bool> {
-        verify(pswd,&self.password)
+        verify(pswd, &self.password)
     }
 
     #[cfg(feature = "dbtest")]

@@ -1,27 +1,19 @@
 mod ping_readiness {
-    use todo_server::todo_api_web::routes::app_routes;
     use todo_server::todo_api_web::model::http::Clients;
+    use todo_server::todo_api_web::routes::app_routes;
 
-    use bytes::Bytes;
-    use actix_web::{
-        test, App,
-        http::StatusCode,
-    };
     use actix_service::Service;
+    use actix_web::{http::StatusCode, test, App};
+    use bytes::Bytes;
     use dotenv::dotenv;
 
     #[actix_rt::test]
     async fn test_ping_pong() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
 
-        let req = test::TestRequest::get()
-            .uri("/ping")
-            .to_request();
+        let req = test::TestRequest::get().uri("/ping").to_request();
         let resp = test::read_response(&mut app, req).await;
 
         assert_eq!(resp, Bytes::from_static(b"pong"));
@@ -30,14 +22,11 @@ mod ping_readiness {
     #[actix_rt::test]
     async fn test_readiness_ok() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
-    
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
         let req = test::TestRequest::with_uri("/~/ready").to_request();
-    
+
         let resp = app.call(req).await.unwrap();
         assert_eq!(resp.status(), StatusCode::ACCEPTED);
     }
@@ -45,15 +34,10 @@ mod ping_readiness {
     #[actix_rt::test]
     async fn not_found_route() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
 
-        let req = test::TestRequest::get()
-            .uri("/crazy-route")
-            .to_request();
+        let req = test::TestRequest::get().uri("/crazy-route").to_request();
 
         let resp = app.call(req).await.unwrap();
         assert_eq!(resp.status(), StatusCode::NOT_FOUND);
@@ -62,28 +46,20 @@ mod ping_readiness {
 
 #[cfg(test)]
 mod create_todo {
-    use todo_server::todo_api_web::{
-        model::todo::TodoIdResponse,
-        routes::app_routes
-    };
-    use todo_server::todo_api_web::model::http::Clients;
-    use actix_web::{
-        test, App,
-    };
-    use serde_json::from_str;
+    use actix_web::{test, App};
     use dotenv::dotenv;
+    use serde_json::from_str;
+    use todo_server::todo_api_web::model::http::Clients;
+    use todo_server::todo_api_web::{model::todo::TodoIdResponse, routes::app_routes};
 
     use crate::helpers::read_json;
 
     #[actix_rt::test]
     async fn valid_todo_post() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
-    
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
         let req = test::TestRequest::post()
             .uri("/api/create")
             .header("Content-Type", "application/json")
@@ -99,32 +75,23 @@ mod create_todo {
 
 #[cfg(test)]
 mod read_all_todos {
-    use todo_server::todo_api_web::{
-        model::todo::{TodoCardsResponse},
-        routes::app_routes
-    };
-    use todo_server::todo_api_web::model::http::Clients;
-    use actix_web::{
-        test, App,
-        http::StatusCode,
-    };
     use actix_service::Service;
-    use serde_json::from_str;
+    use actix_web::{http::StatusCode, test, App};
     use dotenv::dotenv;
+    use serde_json::from_str;
+    use todo_server::todo_api_web::model::http::Clients;
+    use todo_server::todo_api_web::{model::todo::TodoCardsResponse, routes::app_routes};
 
-    use crate::helpers::{read_json, mock_get_todos};
+    use crate::helpers::{mock_get_todos, read_json};
 
     #[actix_rt::test]
     async fn test_todo_index_ok() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
 
         let req = test::TestRequest::with_uri("/api/index").to_request();
-    
+
         let resp = app.call(req).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
     }
@@ -132,12 +99,9 @@ mod read_all_todos {
     #[actix_rt::test]
     async fn test_todo_cards_count() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
-    
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
         let post_req = test::TestRequest::post()
             .uri("/api/create")
             .header("Content-Type", "application/json")
@@ -148,20 +112,17 @@ mod read_all_todos {
         let req = test::TestRequest::with_uri("/api/index").to_request();
         let resp = test::read_response(&mut app, req).await;
 
-        let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
+        let todo_cards: TodoCardsResponse =
+            from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
         assert_eq!(todo_cards.cards.len(), 1);
     }
-
 
     #[actix_rt::test]
     async fn test_todo_cards_with_value() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
-    
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
         let post_req = test::TestRequest::post()
             .uri("/api/create")
             .header("Content-Type", "application/json")
@@ -172,54 +133,41 @@ mod read_all_todos {
         let req = test::TestRequest::with_uri("/api/index").to_request();
         let resp = test::read_response(&mut app, req).await;
 
-        let todo_cards: TodoCardsResponse = from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
+        let todo_cards: TodoCardsResponse =
+            from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
         assert_eq!(todo_cards.cards, mock_get_todos());
     }
-
 }
 
 #[cfg(test)]
-mod  auth {
-    use actix_web::{
-        test, App,
-        http::StatusCode,
-    };
-    use todo_server::todo_api_web::{
-        routes::app_routes
-    };
-    use todo_server::todo_api_web::model::http::Clients;
+mod auth {
+    use crate::helpers::read_json;
+    use actix_web::{http::StatusCode, test, App};
     use dotenv::dotenv;
-    use crate::helpers::{read_json};
-
+    use todo_server::todo_api_web::model::http::Clients;
+    use todo_server::todo_api_web::routes::app_routes;
 
     #[actix_rt::test]
     async fn signup_returns_created_status() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
-    
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
         let signup_req = test::TestRequest::post()
             .uri("/auth/signup")
             .header("Content-Type", "application/json")
             .set_payload(read_json("signup.json").as_bytes().to_owned())
             .to_request();
 
-        let resp = test::call_service(&mut app,signup_req).await;
-        println!("{:?}", resp);
+        let resp = test::call_service(&mut app, signup_req).await;
         assert_eq!(resp.status(), StatusCode::CREATED);
     }
 
     #[actix_rt::test]
     async fn login_returns_token() {
         dotenv().ok();
-        let mut app = test::init_service(
-            App::new()
-                .data(Clients::new())
-                .configure(app_routes)
-        ).await;
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
 
         let login_req = test::TestRequest::post()
             .uri("/auth/login")
@@ -230,7 +178,24 @@ mod  auth {
         let resp_body = test::read_response(&mut app, login_req).await;
 
         let jwt: String = String::from_utf8(resp_body.to_vec()).unwrap();
-        
+
         assert!(jwt.contains("token"));
+    }
+
+    #[actix_rt::test]
+    async fn logout_accepted() {
+        dotenv().ok();
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
+        let logout_req = test::TestRequest::delete()
+            .uri("/auth/logout")
+            .header("Content-Type", "application/json")
+            .header("x-auth", "token")
+            .set_payload(read_json("logout.json").as_bytes().to_owned())
+            .to_request();
+
+        let resp = test::call_service(&mut app, logout_req).await;
+        assert_eq!(resp.status(), StatusCode::ACCEPTED);
     }
 }

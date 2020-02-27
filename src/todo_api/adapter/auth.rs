@@ -16,8 +16,8 @@ mod test {
         let email = "my@email.com";
         let pass = "this Is a cr4zy p@ssw0rd";
         let signup = SignUp {
-            email: String::from(email), 
-            password: String::from(pass)
+            email: String::from(email),
+            password: String::from(pass),
         };
         let user = signup_to_hash_user(signup);
         user.is_user_valid(email, pass)

@@ -25,7 +25,7 @@ impl Error for DbError {
             DbError::UserNotCreated => "User could not be created, check for possible conflits",
             DbError::DatabaseConflit => "There are conflits in database",
             DbError::CannotFindUser => "User could not be found",
-            DbError::TryAgain => "Expire date could not be updated"
+            DbError::TryAgain => "Expire date could not be updated",
         }
     }
 

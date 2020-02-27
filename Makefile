@@ -4,7 +4,7 @@ db:
 clear-db:
 	docker ps -a | awk '{ print $1,$2 }' | grep postgres | awk '{print $1 }' | xargs -I {} docker stop {}
 
-test: clear-db db
+test: db
 	sleep 2
 	diesel setup
 	diesel migration run

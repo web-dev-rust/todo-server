@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 pub mod auth;
+pub mod core;
+pub mod error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TaskDb {

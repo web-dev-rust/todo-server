@@ -1,12 +1,9 @@
-use actix::prelude::*;
 use crate::todo_api::{
-    db::{
-        error::DbError,
-        helpers::DbExecutor,
-    },
     adapter,
-    model::auth::User,
+    db::helpers::DbExecutor,
+    model::{auth::User, error::DbError},
 };
+use actix::prelude::*;
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct SignUp {
     pub email: String,
