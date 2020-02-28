@@ -17,7 +17,7 @@ services:
       - AWS_REGION=julia-home
       - AWS_DYNAMODB_ENDPOINT=http://dynamodb:8000
       - DATABASE_URL=postgres://auth:secret@172.21.1.15/auth_db
-      - RUST_LOG=actix_web=info
+      - RUST_LOG=actix_web=debug
     depends_on:
       - dynamodb
       - postgres

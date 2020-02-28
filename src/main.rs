@@ -25,6 +25,7 @@ async fn web_main() -> Result<(), std::io::Error> {
         .data(Clients::new())
         .wrap(DefaultHeaders::new().header("x-request-id", Uuid::new_v4().to_string()))
         .wrap(Logger::new("IP:%a DATETIME:%t REQUEST:\"%r\" STATUS: %s DURATION:%D X-REQUEST-ID:%{x-request-id}o"))
+        .wrap(crate::todo_api_web::middleware::Authentication)
         .configure(app_routes)
     })
     .workers(num_cpus::get() + 2)
@@ -36,6 +37,8 @@ async fn web_main() -> Result<(), std::io::Error> {
 
 #[fort::root]
 async fn main(_: BastionContext) -> Result<(), ()> {
+    std::env::set_var("RUST_LOG", "actix_web=debug");
+
     dotenv().ok();
     create_table();
 

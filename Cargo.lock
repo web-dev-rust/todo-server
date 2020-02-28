@@ -2533,6 +2533,7 @@ dependencies = [
  "diesel_migrations",
  "dotenv",
  "fort",
+ "futures 0.3.4",
  "jsonwebtokens",
  "log",
  "num_cpus",

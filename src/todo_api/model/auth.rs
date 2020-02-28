@@ -10,10 +10,7 @@ pub struct User {
     pub password: String,
     #[cfg(not(test))]
     password: String,
-    #[cfg(test)]
     pub expires_at: chrono::NaiveDateTime,
-    #[cfg(not(test))]
-    expires_at: chrono::NaiveDateTime,
     pub is_active: bool,
 }
 
