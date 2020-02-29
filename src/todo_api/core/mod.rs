@@ -26,7 +26,7 @@ pub async fn generate_jwt(user: User, state: web::Data<Clients>) -> HttpResponse
             let jwt = crate::todo_api::model::core::Jwt::new(token_jwt);
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(serde_json::to_string(&jwt).unwrap())
+                .json(jwt)
         }
         Err(e) => {
             error!("{:?}", e);
