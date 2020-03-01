@@ -58,17 +58,9 @@ pub fn scan_user(user_email: String, _conn: &PgConnection) -> Result<User, DbErr
     Ok(User::from(user_email, "this is a hash".to_string()))
 }
 
-pub fn token_is_valid(token: &JwtValue, conn: &PgConnection) -> Result<User, DbError> {
-    use crate::schema::auth_user::dsl::*;
-
-    let items = auth_user.filter(email.eq(&token.email)).load::<User>(conn);
-
-    match items {
-        Ok(users) if users.len() > 1 => Err(DbError::DatabaseConflit),
-        Ok(users) if users.len() < 1 => Err(DbError::CannotFindUser),
-        Ok(users) => Ok(users.first().unwrap().clone().to_owned()),
-        Err(_) => Err(DbError::CannotFindUser),
-    }
+#[cfg(feature = "dbtest")]
+pub fn test_scan_user(user_email: String, id: String, _conn: &PgConnection) -> Result<User, DbError> {
+    Ok(User::test_from(user_email, "this is a hash".to_string(), id))
 }
 
 #[cfg(not(feature = "dbtest"))]

@@ -50,16 +50,33 @@ impl Message for JwtValue {
 impl Handler<JwtValue> for DbExecutor {
     type Result = bool;
 
+    #[cfg(not(feature = "dbtest"))]
     fn handle(&mut self, msg: JwtValue, _: &mut Self::Context) -> Self::Result {
-        use crate::todo_api::db::auth::token_is_valid;
+        use crate::todo_api::db::auth::scan_user;
 
-        let user = token_is_valid(&msg, &self.0.get().expect("Failed to open connection"));
+        let user = scan_user(String::from(&msg.email), &self.0.get().expect("Failed to open connection"));
         match user {
             Err(_) => false,
             Ok(user) => {
                 match (user.is_active, validate_jwt_date(user.expires_at), user.id.to_string() == msg.id) {
                     (true, true, true) => true,
-                    (_, _, _) => false
+                    _ => false
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "dbtest")]
+    fn handle(&mut self, msg: JwtValue, _: &mut Self::Context) -> Self::Result {
+        use crate::todo_api::db::auth::test_scan_user;
+
+        let user = test_scan_user(String::from(&msg.email), String::from(&msg.id), &self.0.get().expect("Failed to open connection"));
+        match user {
+            Err(_) => false,
+            Ok(user) => {
+                match (user.is_active, validate_jwt_date(user.expires_at), user.id.to_string() == msg.id) {
+                    (true, true, true) => true,
+                    _ => false
                 }
             }
         }

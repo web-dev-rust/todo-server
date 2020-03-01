@@ -102,7 +102,6 @@ mod jwt_validations {
     use super::{validate_jwt_date, validate_jwt_info};
     use crate::todo_api::model::auth::User;
     use crate::todo_api_web::model::http::Clients;
-    use actix_web::http::StatusCode;
     use chrono::{DateTime, Utc};
 
     #[test]
@@ -115,36 +114,6 @@ mod jwt_validations {
     fn date_way_larger_than_now_is_true() {
         let expires = "3014-11-28T12:00:09Z".parse::<DateTime<Utc>>().unwrap();
         assert!(validate_jwt_date(expires.naive_utc()));
-    }
-
-    #[actix_rt::test]
-    async fn all_args_are_equal_is_accepted() {
-        use dotenv::dotenv;
-        dotenv().ok();
-
-        let exec = Clients::new();
-        let state = actix_web::web::Data::new(exec);
-
-        let user = User::from("my@email.com".to_string(), "pass".to_string());
-        let email = "my@email.com".to_string();
-
-        let resp = validate_jwt_info(email.clone(), email, Ok(user), state).await;
-        assert_eq!(resp.status(), StatusCode::ACCEPTED);
-    }
-
-    #[actix_rt::test]
-    async fn all_args_are_not_equal_is_unauth() {
-        use dotenv::dotenv;
-        dotenv().ok();
-
-        let exec = Clients::new();
-        let state = actix_web::web::Data::new(exec);
-
-        let user = User::from("not_my@email.com".to_string(), "pass".to_string());
-        let email = "my@email.com".to_string();
-
-        let resp = validate_jwt_info(email.clone(), email, Ok(user), state).await;
-        assert_eq!(resp.status(), StatusCode::UNAUTHORIZED);
     }
 }
 
@@ -190,5 +159,19 @@ mod valid_email_pswd {
             "my@email.com",
             "My cr4zy Passw0rd My cr4zy Passw0rd"
         ));
+    }
+}
+
+#[cfg(test)]
+mod decode_jwt {
+    use super::decode_jwt;
+    use serde_json::json;
+
+    #[test]
+    fn decodes_random_jwt() {
+        let jwt = decode_jwt("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InRlc3QiLCJpYXQiOjE1MTYyMzkwMjJ9.tRF6jrkFnCfv6ksyU-JwVq0xsW3SR3y5cNueSTdHdAg");
+        let expected = json!({"sub": "1234567890", "name": "test", "iat": 1516239022 });
+
+        assert_eq!(jwt, expected);
     }
 }

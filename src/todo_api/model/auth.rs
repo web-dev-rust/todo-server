@@ -27,6 +27,19 @@ impl User {
         }
     }
 
+    #[cfg(feature = "dbtest")]
+    pub fn test_from(email: String, password: String, id: String) -> Self {
+        let utc = crate::todo_api::db::helpers::one_day_from_now();
+
+        Self {
+            email: email,
+            id: uuid::Uuid::parse_str(&id).unwrap(),
+            password: password,
+            expires_at: utc.naive_utc(),
+            is_active: true,
+        }
+    }
+
     #[cfg(not(feature = "dbtest"))]
     pub fn verify(&self, pswd: String) -> BcryptResult<bool> {
         verify(pswd, &self.password)

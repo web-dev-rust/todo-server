@@ -66,7 +66,7 @@ where
             match jwt {
                 None => Box::pin(async move {
                     Ok::<_,actix_http::error::Error>(req.into_response(
-                        HttpResponse::Unauthorized()
+                        HttpResponse::BadRequest()
                         .json("{\"error\": \"x-auth is required\"}")
                         .into_body()
                     ))
