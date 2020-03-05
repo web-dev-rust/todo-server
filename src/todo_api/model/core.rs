@@ -70,6 +70,7 @@ impl Handler<JwtValue> for DbExecutor {
     fn handle(&mut self, msg: JwtValue, _: &mut Self::Context) -> Self::Result {
         use crate::todo_api::db::auth::test_scan_user;
 
+        
         let user = test_scan_user(String::from(&msg.email), String::from(&msg.id), &self.0.get().expect("Failed to open connection"));
         match user {
             Err(_) => false,
