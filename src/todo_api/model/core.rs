@@ -1,4 +1,8 @@
-use crate::todo_api::{db::helpers::DbExecutor, model::error::DbError};
+use crate::todo_api::{
+    db::helpers::DbExecutor, 
+    model::error::DbError,
+    core::validate_jwt_date,
+};
 use actix::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
@@ -37,6 +41,47 @@ pub struct JwtValue {
     pub id: String,
     pub email: String,
     pub expires_at: chrono::NaiveDateTime,
+}
+
+impl Message for JwtValue {
+    type Result = bool;
+}
+
+impl Handler<JwtValue> for DbExecutor {
+    type Result = bool;
+
+    #[cfg(not(feature = "dbtest"))]
+    fn handle(&mut self, msg: JwtValue, _: &mut Self::Context) -> Self::Result {
+        use crate::todo_api::db::auth::scan_user;
+
+        let user = scan_user(String::from(&msg.email), &self.0.get().expect("Failed to open connection"));
+        match user {
+            Err(_) => false,
+            Ok(user) => {
+                match (user.is_active, validate_jwt_date(user.expires_at), user.id.to_string() == msg.id) {
+                    (true, true, true) => true,
+                    _ => false
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "dbtest")]
+    fn handle(&mut self, msg: JwtValue, _: &mut Self::Context) -> Self::Result {
+        use crate::todo_api::db::auth::test_scan_user;
+
+        
+        let user = test_scan_user(String::from(&msg.email), String::from(&msg.id), &self.0.get().expect("Failed to open connection"));
+        match user {
+            Err(_) => false,
+            Ok(user) => {
+                match (user.is_active, validate_jwt_date(user.expires_at), user.id.to_string() == msg.id) {
+                    (true, true, true) => true,
+                    _ => false
+                }
+            }
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]

@@ -4,12 +4,18 @@ db:
 clear-db:
 	docker ps -a | awk '{ print $1,$2 }' | grep postgres | awk '{print $1 }' | xargs -I {} docker stop {}
 
-test: db
+int: db
 	sleep 2
 	diesel setup
 	diesel migration run
-	cargo test --features "dbtest"
+	cargo test --test lib --no-fail-fast --features "dbtest" -- --test-threads 3
 	diesel migration redo
+
+
+unit:
+	cargo test --locked  --no-fail-fast --lib -- --test-threads 3
+
+test: unit int
 
 run-local:
 	cargo run --features "dbtest"

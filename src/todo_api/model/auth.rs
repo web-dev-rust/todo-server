@@ -10,10 +10,7 @@ pub struct User {
     pub password: String,
     #[cfg(not(test))]
     password: String,
-    #[cfg(test)]
     pub expires_at: chrono::NaiveDateTime,
-    #[cfg(not(test))]
-    expires_at: chrono::NaiveDateTime,
     pub is_active: bool,
 }
 
@@ -27,6 +24,19 @@ impl User {
             password: password,
             expires_at: utc.naive_utc(),
             is_active: false,
+        }
+    }
+
+    #[cfg(feature = "dbtest")]
+    pub fn test_from(email: String, password: String, id: String) -> Self {
+        let utc = crate::todo_api::db::helpers::one_day_from_now();
+
+        Self {
+            email: email,
+            id: uuid::Uuid::parse_str(&id).unwrap(),
+            password: password,
+            expires_at: utc.naive_utc(),
+            is_active: true,
         }
     }
 

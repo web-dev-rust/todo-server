@@ -21,10 +21,7 @@ pub async fn create_todo(state: web::Data<Clients>, info: web::Json<TodoCard>) -
         }
         Some(id) => HttpResponse::Created()
             .content_type("application/json")
-            .body(
-                serde_json::to_string(&TodoIdResponse::new(id))
-                    .expect("Failed to serialize todo card"),
-            ),
+            .json(TodoIdResponse::new(id))
     }
 }
 
@@ -34,9 +31,7 @@ pub async fn show_all_todo(state: web::Data<Clients>) -> impl Responder {
             error!("Failed to read todo cards");
             HttpResponse::InternalServerError().body("Failed to read todo cards")
         }
-        Some(todos) => HttpResponse::Ok().content_type("application/json").body(
-            serde_json::to_string(&TodoCardsResponse { cards: todos })
-                .expect("Failed to serialize todo cards"),
-        ),
+        Some(todos) => HttpResponse::Ok().content_type("application/json")
+            .json(TodoCardsResponse { cards: todos })
     }
 }

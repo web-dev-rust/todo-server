@@ -1,3 +1,4 @@
+#[cfg(test)]
 mod ping_readiness {
     use todo_server::todo_api_web::model::http::Clients;
     use todo_server::todo_api_web::routes::app_routes;
@@ -197,5 +198,59 @@ mod auth {
 
         let resp = test::call_service(&mut app, logout_req).await;
         assert_eq!(resp.status(), StatusCode::ACCEPTED);
+    }
+}
+
+#[cfg(test)]
+mod middleware {
+    use actix_web::{test, App, http::StatusCode};
+    use dotenv::dotenv;
+    use todo_server::todo_api_web::model::http::Clients;
+    use todo_server::todo_api_web::routes::app_routes;
+
+    use crate::helpers::read_json;
+
+    #[actix_rt::test]
+    async fn bad_request_todo_post() {
+        dotenv().ok();
+        let mut app =
+            test::init_service(
+                App::new()
+                .data(Clients::new())
+                .wrap(todo_server::todo_api_web::middleware::Authentication)
+                .configure(app_routes)
+            ).await;
+
+        let req = test::TestRequest::post()
+            .uri("/api/create")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("post_todo.json").as_bytes().to_owned())
+            .to_request();
+
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[actix_rt::test]
+    async fn good_token_todo_post() {
+        dotenv().ok();
+        let mut app =
+            test::init_service(
+                App::new()
+                .data(Clients::new())
+                .wrap(todo_server::todo_api_web::middleware::Authentication)
+                .configure(app_routes)
+            ).await;
+
+        let req = test::TestRequest::post()
+            .uri("/api/create")
+            .header("Content-Type", "application/json")
+            .header("x-auth", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc1NjJiZjUzLTYxNTYtNDMzYi1hMjAxLTkwYmJjNzRiMDEyNyIsImVtYWlsIjoibXlAZW1haWwuY29tIiwiZXhwaXJlc19hdCI6IjMwMjAtMTEtMjhUMTI6MDA6MDkifQ.hom6KvmmLIuu3dLCSUrOK9KBWyUb0fvdX4hIay52UIY")
+            .set_payload(read_json("post_todo.json").as_bytes().to_owned())
+            .to_request();
+
+        let resp = test::call_service(&mut app, req).await;
+        println!("{:?}", resp);
+        assert_eq!(resp.status(), StatusCode::CREATED);
     }
 }
