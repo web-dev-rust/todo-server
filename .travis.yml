@@ -1,0 +1,16 @@
+language: rust
+rust:
+  - nightly
+  - stable
+cache: cargo
+services:
+- postgresql
+before_script:
+- psql -c 'create database auth_db;' -U postgres
+- echo "DATABASE_URL=postgres://postgres@localhost/auth_db" > .env
+- cargo install diesel_cli --no-default-features --features=postgres
+- diesel migration run
+script:
+- cargo build --verbose --all
+- cargo test --locked  --no-fail-fast --lib --verbose --all
+- cargo test --test lib --no-fail-fast --features "dbtest" --verbose --all
