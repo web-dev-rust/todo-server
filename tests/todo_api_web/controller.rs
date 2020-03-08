@@ -254,3 +254,43 @@ mod middleware {
         assert_eq!(resp.status(), StatusCode::CREATED);
     }
 }
+
+#[cfg(test)]
+mod show_by_id {
+    use actix_web::{test, App};
+    use dotenv::dotenv;
+    use todo_server::todo_api_web::model::{
+        http::Clients,
+        todo::TodoCard,
+    };
+    use todo_server::todo_api_web::routes::app_routes;
+    use serde_json::from_str;
+    use crate::helpers::{mock_get_todos};
+
+    #[actix_rt::test]
+    async fn test_todo_card_by_id() {
+        dotenv().ok();
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
+        let req = test::TestRequest::with_uri("/api/show/544e3675-19f5-4455-9ed9-9ccc577f70fe").to_request();
+        let resp = test::read_response(&mut app, req).await;
+
+        let todo_card: TodoCard =
+            from_str(&String::from_utf8(resp.to_vec()).unwrap()).unwrap();
+        assert_eq!(&todo_card, mock_get_todos().get(0usize).unwrap());
+    }
+
+    #[actix_rt::test]
+    async fn test_todo_card_without_uuid() {
+        dotenv().ok();
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
+        let req = test::TestRequest::with_uri("/api/show/fake-uuid").to_request();
+        let resp = test::read_response(&mut app, req).await;
+
+        let message = String::from_utf8(resp.to_vec()).unwrap();
+        assert_eq!(&message, "Id must be a Uuid::V4");
+    }
+}

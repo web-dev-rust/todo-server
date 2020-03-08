@@ -1,7 +1,7 @@
 use crate::{
     todo_api::{
         adapter,
-        db::todo::{get_todos, put_todo},
+        db::todo::{get_todos, put_todo, get_todo_by_id},
     },
     todo_api_web::model::{
         http::Clients,
@@ -33,5 +33,22 @@ pub async fn show_all_todo(state: web::Data<Clients>) -> impl Responder {
         }
         Some(todos) => HttpResponse::Ok().content_type("application/json")
             .json(TodoCardsResponse { cards: todos })
+    }
+}
+
+pub async fn show_by_id(id: web::Path<String>, state: web::Data<Clients>) -> impl Responder {
+    let uuid = id.to_string();
+
+    if uuid::Uuid::parse_str(&uuid).is_err() {
+        return HttpResponse::BadRequest().body("Id must be a Uuid::V4");
+    }
+
+    match get_todo_by_id(uuid, state.dynamo.clone()) {
+        None => {
+            error!("Failed to read todo cards");
+            HttpResponse::NotFound().finish()
+        }
+        Some(todo_id) => HttpResponse::Ok().content_type("application/json")
+            .json(todo_id)
     }
 }
