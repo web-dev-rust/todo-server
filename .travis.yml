@@ -1,6 +1,7 @@
 language: rust
 rust:
   - nightly
+  - 1.40
   - stable
 cache: cargo
 services:

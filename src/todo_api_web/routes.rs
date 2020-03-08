@@ -1,7 +1,7 @@
 use crate::todo_api_web::controller::{
     auth::{login, logout, signup_user},
     pong, readiness,
-    todo::{create_todo, show_all_todo},
+    todo::{create_todo, show_all_todo, show_by_id},
 };
 use actix_web::{web, HttpResponse};
 
@@ -11,7 +11,8 @@ pub fn app_routes(config: &mut web::ServiceConfig) {
             .service(
                 web::scope("api/")
                     .route("create", web::post().to(create_todo))
-                    .route("index", web::get().to(show_all_todo)),
+                    .route("index", web::get().to(show_all_todo))
+                    .route("show/{id}", web::get().to(show_by_id)),
             )
             .service(
                 web::scope("auth/")

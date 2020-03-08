@@ -24,7 +24,7 @@ async fn web_main() -> Result<(), std::io::Error> {
         .data(Clients::new())
         .wrap(DefaultHeaders::new().header("x-request-id", Uuid::new_v4().to_string()))
         .wrap(Logger::new("IP:%a DATETIME:%t REQUEST:\"%r\" STATUS: %s DURATION:%D X-REQUEST-ID:%{x-request-id}o"))
-        .wrap(crate::todo_api_web::middleware::Authentication)
+        // .wrap(crate::todo_api_web::middleware::Authentication)
         .configure(app_routes)
     })
     .workers(num_cpus::get() + 2)
