@@ -58,7 +58,7 @@ impl Into<HashMap<String, AttributeValue>> for TodoCardDb {
         todo_card.insert("title".to_string(), val!(S => Some(self.title)));
         todo_card.insert("description".to_string(), val!(S => Some(self.description)));
         todo_card.insert("owner".to_string(), val!(S => Some(self.owner.to_string())));
-        todo_card.insert("state".to_string(), val!(S => Some(self.state.to_string())));
+        todo_card.insert("state_db".to_string(), val!(S => Some(self.state.to_string())));
         todo_card.insert("tasks".to_string(), 
             val!(L => self.tasks.into_iter().map(|t| t.to_db_val()).collect::<Vec<AttributeValue>>()));
         todo_card
@@ -108,7 +108,7 @@ mod test {
         );
         expected.insert("owner".to_string(), val!(S => Some(id.to_string())));
         expected.insert(
-            "state".to_string(),
+            "state_db".to_string(),
             val!(S => Some(StateDb::Done.to_string())),
         );
         expected.insert(

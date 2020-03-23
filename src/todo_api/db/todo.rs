@@ -1,7 +1,7 @@
 use crate::todo_api::{adapter, db::helpers::TODO_CARD_TABLE, model::TodoCardDb};
-use crate::todo_api_web::model::todo::TodoCard;
+use crate::todo_api_web::model::todo::{TodoCard, TodoCardUpdate};
 use log::{debug, error};
-use rusoto_dynamodb::{DynamoDbClient, PutItemInput, ScanInput};
+use rusoto_dynamodb::{DynamoDbClient, PutItemInput, ScanInput, UpdateItemInput};
 use uuid::Uuid;
 
 #[cfg(not(feature = "dbtest"))]
@@ -83,6 +83,58 @@ pub fn get_todo_by_id(id: String, client: DynamoDbClient) -> Option<TodoCard> {
             None
         }
     }
+}
+
+#[cfg(not(feature = "dbtest"))]
+pub fn update_todo_info(id: String, info: TodoCardUpdate, client: DynamoDbClient) -> bool {
+    use rusoto_dynamodb::{AttributeValue, DynamoDb};
+    use std::collections::HashMap;
+
+    let expression = adapter::update_expression(&info);
+    let attribute_values = adapter::expression_attribute_values(&info);
+    let mut _map = HashMap::new();
+    let mut attr = AttributeValue::default();
+    attr.s = Some(id);
+    _map.insert(String::from("id"), attr);
+
+    let update = UpdateItemInput {
+        table_name: TODO_CARD_TABLE.to_string(),
+        key: _map,
+        update_expression: expression,
+        expression_attribute_values: attribute_values,
+        ..UpdateItemInput::default()
+    };
+
+    match client.update_item(update).sync() {
+        Ok(_) => true,
+        Err(e) => {
+            println!("failed due to {:?}", e);
+            false
+        }
+    }
+}
+
+#[cfg(feature = "dbtest")]
+pub fn update_todo_info(id: String, info: TodoCardUpdate, client: DynamoDbClient) -> bool {
+    use rusoto_dynamodb::{AttributeValue, DynamoDb};
+    use std::collections::HashMap;
+
+    let expression = adapter::update_expression(&info);
+    let attribute_values = adapter::expression_attribute_values(&info);
+    let mut _map = HashMap::new();
+    let mut attr = AttributeValue::default();
+    attr.s = Some(id);
+    _map.insert(String::from("id"), attr);
+
+    let update = UpdateItemInput {
+        table_name: TODO_CARD_TABLE.to_string(),
+        key: _map,
+        update_expression: expression,
+        expression_attribute_values: attribute_values,
+        ..UpdateItemInput::default()
+    };
+
+    true
 }
 
 #[cfg(feature = "dbtest")]

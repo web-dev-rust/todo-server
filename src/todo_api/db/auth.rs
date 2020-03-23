@@ -2,7 +2,7 @@ use diesel::{prelude::*, PgConnection};
 
 use crate::todo_api::model::auth::User;
 use crate::todo_api::model::{
-    core::{Inactivate, UpdateUserStatus, JwtValue},
+    core::{Inactivate, UpdateUserStatus},
     error::DbError,
 };
 

@@ -28,6 +28,12 @@ pub struct TodoIdResponse {
     id: Uuid,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+pub struct TodoCardUpdate {
+    pub description: Option<String>,
+    pub state: Option<State>,
+}
+
 #[derive(Serialize, Deserialize, PartialEq)]
 pub struct TodoCardsResponse {
     pub cards: Vec<TodoCard>,
@@ -40,6 +46,12 @@ impl State {
             "Done" => State::Done,
             _ => State::Todo,
         }
+    }
+}
+
+impl std::fmt::Display for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 

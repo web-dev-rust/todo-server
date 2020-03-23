@@ -250,7 +250,6 @@ mod middleware {
             .to_request();
 
         let resp = test::call_service(&mut app, req).await;
-        println!("{:?}", resp);
         assert_eq!(resp.status(), StatusCode::CREATED);
     }
 }
@@ -292,5 +291,33 @@ mod show_by_id {
 
         let message = String::from_utf8(resp.to_vec()).unwrap();
         assert_eq!(&message, "Id must be a Uuid::V4");
+    }
+}
+
+#[cfg(test)]
+mod update {
+    use actix_web::{test, App, http::StatusCode};
+    use dotenv::dotenv;
+    use todo_server::todo_api_web::model::{
+        http::Clients,
+    };
+    use todo_server::todo_api_web::routes::app_routes;
+    use crate::helpers::{read_json};
+
+
+    #[actix_rt::test]
+    async fn test_todo_card_by_id() {
+        dotenv().ok();
+        let mut app =
+            test::init_service(App::new().data(Clients::new()).configure(app_routes)).await;
+
+        let req = test::TestRequest::put()
+            .uri("/api/update/544e3675-19f5-4455-9ed9-9ccc577f70fe")
+            .header("Content-Type", "application/json")
+            .set_payload(read_json("put_todo.json").as_bytes().to_owned())
+            .to_request();
+
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), StatusCode::OK);
     }
 }

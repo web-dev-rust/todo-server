@@ -1,11 +1,11 @@
 use crate::{
     todo_api::{
         adapter,
-        db::todo::{get_todos, put_todo, get_todo_by_id},
+        db::todo::{get_todos, put_todo, get_todo_by_id, update_todo_info},
     },
     todo_api_web::model::{
         http::Clients,
-        todo::{TodoCard, TodoCardsResponse, TodoIdResponse},
+        todo::{TodoCard, TodoCardsResponse, TodoIdResponse, TodoCardUpdate},
     },
 };
 use actix_web::{web, HttpResponse, Responder};
@@ -50,5 +50,21 @@ pub async fn show_by_id(id: web::Path<String>, state: web::Data<Clients>) -> imp
         }
         Some(todo_id) => HttpResponse::Ok().content_type("application/json")
             .json(todo_id)
+    }
+}
+
+pub async fn update_todo(
+    id: web::Path<String>,
+    info: web::Json<TodoCardUpdate>, 
+    state: web::Data<Clients>) -> impl Responder {
+    let uuid = id.to_string();
+
+    if uuid::Uuid::parse_str(&uuid).is_err() {
+        return HttpResponse::BadRequest().body("Id must be a Uuid::V4");
+    }
+
+    match update_todo_info(uuid, info.into_inner(), state.dynamo.clone()) {
+        true => HttpResponse::Ok().finish(),
+        false => HttpResponse::NotFound().finish()
     }
 }

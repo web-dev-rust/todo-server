@@ -26,11 +26,12 @@ macro_rules! val {
 
 use crate::{
     todo_api::model::{StateDb, TaskDb, TodoCardDb},
-    todo_api_web::model::todo::{State, Task, TodoCard},
+    todo_api_web::model::todo::{State, Task, TodoCard, TodoCardUpdate},
 };
 use actix_web::web;
-use rusoto_dynamodb::ScanOutput;
+use rusoto_dynamodb::{ScanOutput, AttributeValue};
 use uuid::Uuid;
+use std::collections::HashMap;
 
 pub fn todo_json_to_db(card: web::Json<TodoCard>, id: Uuid) -> TodoCardDb {
     TodoCardDb {
@@ -63,7 +64,7 @@ pub fn scanoutput_to_todocards(scan: ScanOutput) -> Vec<TodoCard> {
             owner: uuid::Uuid::parse_str(&item.get("owner").unwrap().s.clone().unwrap()).unwrap(),
             title: item.get("title").unwrap().s.clone().unwrap(),
             description: item.get("description").unwrap().s.clone().unwrap(),
-            state: State::from(item.get("state").unwrap().s.clone().unwrap()),
+            state: State::from(item.get("state_db").unwrap().s.clone().unwrap()),
             tasks: item
                 .get("tasks")
                 .unwrap()
@@ -94,6 +95,48 @@ pub fn scanoutput_to_todocards(scan: ScanOutput) -> Vec<TodoCard> {
                 .collect::<Vec<Task>>(),
         })
         .collect::<Vec<TodoCard>>()
+}
+
+
+pub fn update_expression(info: &TodoCardUpdate) -> Option<String> {
+    let data = info.clone();
+    match (data.description, data.state) {
+        (Some(_), Some(_)) => Some(String::from("SET description = :d, state_db = :s")),
+        (_, Some(_)) => Some(String::from("SET state_db = :s")),
+        (Some(_), _) => Some(String::from("SET description = :d")),
+        _ => None
+    }
+}
+
+pub fn expression_attribute_values(info: &TodoCardUpdate) -> Option<HashMap<String, AttributeValue>> {
+    let data = info.clone();
+    match (data.description, data.state) {
+        (Some(desc), Some(state)) => {
+            let mut _map = HashMap::new();
+            let mut attr_d = AttributeValue::default();
+            attr_d.s = Some(String::from(desc));
+            let mut attr_s = AttributeValue::default();
+            attr_s.s = Some(String::from(state.to_string()));
+            _map.insert(String::from(":d"), attr_d);
+            _map.insert(String::from(":s"), attr_s);
+            Some(_map)
+        },
+        (_, Some(state)) => {
+            let mut _map = HashMap::new();
+            let mut attr = AttributeValue::default();
+            attr.s = Some(String::from(state.to_string()));
+            _map.insert(String::from(":s"), attr);
+            Some(_map)
+        },
+        (Some(desc), _) => {
+            let mut _map = HashMap::new();
+            let mut attr = AttributeValue::default();
+            attr.s = Some(String::from(desc));
+            _map.insert(String::from(":d"), attr);
+            Some(_map)
+        },
+        _ => None
+    }
 }
 
 #[cfg(test)]
@@ -235,7 +278,7 @@ mod scan_to_cards {
             },
         );
         hash.insert(
-            "state".to_string(),
+            "state_db".to_string(),
             AttributeValue {
                 b: None,
                 bool: None,
@@ -337,5 +380,43 @@ mod scan_to_cards {
         let todos = vec![todo.clone(), todo];
 
         assert_eq!(scanoutput_to_todocards(scan), todos)
+    }
+}
+
+#[cfg(test)]
+mod update_expression_test {
+    use super::update_expression;
+    use crate::todo_api_web::model::todo::{State, TodoCardUpdate};
+
+    #[test]
+    fn description_and_state() {
+        let todo_update = TodoCardUpdate {description: Some("haiushdusd".to_string()), state: Some(State::Doing)};
+        let expected = Some(String::from("SET description = :d, state_db = :s"));
+
+        assert_eq!(expected, update_expression(&todo_update));
+    }
+
+    #[test]
+    fn description() {
+        let todo_update = TodoCardUpdate {description: Some("haiushdusd".to_string()), state: None};
+        let expected = Some(String::from("SET description = :d"));
+
+        assert_eq!(expected, update_expression(&todo_update));
+    }
+
+    #[test]
+    fn state() {
+        let todo_update = TodoCardUpdate {description: None, state: Some(State::Doing)};
+        let expected = Some(String::from("SET state_db = :s"));
+
+        assert_eq!(expected, update_expression(&todo_update));
+    }
+
+    #[test]
+    fn none() {
+        let todo_update = TodoCardUpdate {description: None, state: None};
+        let expected = None;
+
+        assert_eq!(expected, update_expression(&todo_update));
     }
 }
