@@ -17,7 +17,10 @@ services:
       - AWS_REGION=julia-home
       - AWS_DYNAMODB_ENDPOINT=http://dynamodb:8000
       - DATABASE_URL=postgres://auth:secret@172.21.1.15/auth_db
-      - RUST_LOG=actix_web=debug
+      - RUST_LOG=debug
+      - CARGO_HOME=/var/www/
+    volumes:
+      - .:/var/www/app
     depends_on:
       - dynamodb
       - postgres
